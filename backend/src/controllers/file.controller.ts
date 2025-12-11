@@ -1,0 +1,102 @@
+import { Request, Response } from 'express';
+import { fileService } from '../services/file.service';
+import { storageService } from '../services/storage.service';
+import { asyncHandler, AppError } from '../middleware/error-handler';
+import { TransferItem } from '../types';
+import { CONSTANTS } from '../utils/constants';
+
+export class FileController {
+  uploadFile = asyncHandler(async (req: Request, res: Response) => {
+    const { address } = req.params;
+
+    if (!req.file) {
+      throw new AppError(400, 'No file uploaded');
+    }
+
+    // Ensure address exists
+    const addressExists = await storageService.addressExists(address);
+    if (!addressExists) {
+      throw new AppError(404, 'Address not found');
+    }
+
+    const metadata = await fileService.saveFile(address, req.file);
+
+    res.json({
+      success: true,
+      data: metadata,
+      message: 'File uploaded successfully',
+    });
+  });
+
+  downloadFile = asyncHandler(async (req: Request, res: Response) => {
+    const { address, id } = req.params;
+
+    // Update last accessed time
+    await storageService.getAddress(address);
+
+    const metadata = await fileService.getFile(address, id);
+
+    res.download(metadata.path, metadata.originalName);
+  });
+
+  listData = asyncHandler(async (req: Request, res: Response) => {
+    const { address } = req.params;
+
+    // Update last accessed time
+    await storageService.getAddress(address);
+
+    const textData = await storageService.getText(address);
+    const files = await storageService.getFilesList(address);
+
+    const items: TransferItem[] = [];
+
+    // Add text data if exists
+    if (textData) {
+      items.push({
+        id: textData.id,
+        type: 'text',
+        createdAt: textData.createdAt,
+        preview: textData.content.substring(0, CONSTANTS.DATA.TEXT_PREVIEW_LENGTH),
+      });
+    }
+
+    // Add files
+    files.forEach((file) => {
+      items.push({
+        id: file.id,
+        type: 'file',
+        createdAt: file.createdAt,
+        size: file.size,
+        filename: file.originalName,
+      });
+    });
+
+    // Sort by creation time (newest first)
+    items.sort((a, b) => b.createdAt - a.createdAt);
+
+    res.json({
+      success: true,
+      data: { items },
+    });
+  });
+
+  deleteData = asyncHandler(async (req: Request, res: Response) => {
+    const { address } = req.params;
+
+    // Delete text
+    await storageService.deleteText(address);
+
+    // Delete all files
+    await fileService.deleteAllFiles(address);
+
+    // Delete address
+    await storageService.deleteAddress(address);
+
+    res.json({
+      success: true,
+      message: 'All data deleted successfully',
+    });
+  });
+}
+
+export const fileController = new FileController();

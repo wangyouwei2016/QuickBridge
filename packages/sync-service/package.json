@@ -1,0 +1,21 @@
+{
+  "name": "@extension/sync-service",
+  "version": "0.0.1",
+  "description": "QuickBridge sync service for cross-device data transfer",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./lib/index.ts"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "qrcode": "^1.5.3"
+  },
+  "devDependencies": {
+    "@types/qrcode": "^1.5.5",
+    "typescript": "^5.8.3"
+  }
+}

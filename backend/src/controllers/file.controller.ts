@@ -1,9 +1,9 @@
-import { Request, Response } from 'express';
+import { asyncHandler, AppError } from '../middleware/error-handler';
 import { fileService } from '../services/file.service';
 import { storageService } from '../services/storage.service';
-import { asyncHandler, AppError } from '../middleware/error-handler';
-import { TransferItem } from '../types';
 import { CONSTANTS } from '../utils/constants';
+import type { TransferItem } from '../types';
+import type { Request, Response } from 'express';
 
 export class FileController {
   uploadFile = asyncHandler(async (req: Request, res: Response) => {
@@ -45,23 +45,23 @@ export class FileController {
     // Update last accessed time
     await storageService.getAddress(address);
 
-    const textData = await storageService.getText(address);
+    const texts = await storageService.getTextsList(address);
     const files = await storageService.getFilesList(address);
 
     const items: TransferItem[] = [];
 
-    // Add text data if exists
-    if (textData) {
+    // Add all text data
+    texts.forEach(textData => {
       items.push({
         id: textData.id,
         type: 'text',
         createdAt: textData.createdAt,
         preview: textData.content.substring(0, CONSTANTS.DATA.TEXT_PREVIEW_LENGTH),
       });
-    }
+    });
 
     // Add files
-    files.forEach((file) => {
+    files.forEach(file => {
       items.push({
         id: file.id,
         type: 'file',
@@ -83,8 +83,8 @@ export class FileController {
   deleteData = asyncHandler(async (req: Request, res: Response) => {
     const { address } = req.params;
 
-    // Delete text
-    await storageService.deleteText(address);
+    // Delete all texts
+    await storageService.deleteAllTexts(address);
 
     // Delete all files
     await fileService.deleteAllFiles(address);

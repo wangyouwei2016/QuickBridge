@@ -18,7 +18,8 @@
       "Bash(bash:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
-      "Bash(pnpm build:*)"
+      "Bash(pnpm build:*)",
+      "Bash(pnpm type-check:*)"
     ]
   }
 }

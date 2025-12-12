@@ -1,8 +1,11 @@
 {
-  "extends": "@extension/tsconfig/base.json",
+  "extends": "../tsconfig/base.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "lib"
+    "rootDir": "lib",
+    "noEmit": false,
+    "declaration": true,
+    "declarationMap": true
   },
   "include": ["lib/**/*"],
   "exclude": ["node_modules", "dist"]

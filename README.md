@@ -404,7 +404,134 @@ Redis Key 设计:
 
 ### 后端部署
 
-#### 方式 1: 使用 PM2（推荐）
+#### 方式 1: 一键部署脚本（推荐 ⭐）
+
+**适用场景**: 云服务器（阿里云、腾讯云、Oracle Cloud 等）或 VPS
+
+这是最简单的部署方式，使用 Docker Compose 自动部署后端和 Redis。
+
+**前置要求**:
+- 已安装 Docker 和 Docker Compose
+- 服务器开放 3000 端口
+
+**部署步骤**:
+
+```bash
+# 1. 克隆项目到服务器
+git clone https://github.com/your-username/chrome-extension-QuickBridge.git
+cd chrome-extension-QuickBridge/backend
+
+# 2. 运行一键部署脚本
+chmod +x simple-deploy.sh
+./simple-deploy.sh
+```
+
+脚本会自动完成：
+- ✅ 检查 Docker 环境
+- ✅ 构建 Docker 镜像
+- ✅ 启动 Redis 和后端服务
+- ✅ 健康检查
+- ✅ 显示服务状态
+
+**部署完成后**，你会看到：
+
+```
+========================================
+服务已启动在以下端口:
+  - 后端 API: http://localhost:3000
+  - Redis: localhost:6379 (仅容器内部访问)
+
+测试 API:
+  curl http://localhost:3000/health
+  curl -X POST http://localhost:3000/api/v1/address/random
+
+查看日志:
+  docker-compose logs -f
+
+停止服务:
+  docker-compose down
+========================================
+```
+
+**配置域名和 HTTPS**:
+
+如果你有域名，建议配置 Nginx 反向代理：
+
+```bash
+# 1. 安装 Nginx
+sudo apt update
+sudo apt install nginx certbot python3-certbot-nginx
+
+# 2. 创建 Nginx 配置
+sudo nano /etc/nginx/sites-available/quickbridge
+```
+
+**Nginx 配置示例**:
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;  # 替换为你的域名
+
+    # API 路由
+    location /api/ {
+        proxy_pass http://localhost:3000/api/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    # Web 前端（移动端）
+    location / {
+        proxy_pass http://localhost:3000/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+```bash
+# 3. 启用配置
+sudo ln -s /etc/nginx/sites-available/quickbridge /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl restart nginx
+
+# 4. 配置 HTTPS（可选但推荐）
+sudo certbot --nginx -d your-domain.com
+```
+
+**环境变量配置**:
+
+如需修改配置，编辑 `docker-compose.yml` 中的 `environment` 部分：
+
+```yaml
+environment:
+  - PORT=3000                      # 服务端口
+  - REDIS_HOST=redis               # Redis 主机（容器名）
+  - REDIS_PORT=6379                # Redis 端口
+  - MAX_FILE_SIZE=20971520         # 最大文件大小（20MB）
+  - ADDRESS_TTL_HOURS=24           # 地址过期时间（24小时）
+  - CORS_ORIGIN=*                  # CORS 配置
+```
+
+修改后重新部署：
+
+```bash
+docker-compose down
+docker-compose up -d
+```
+
+#### 方式 2: 使用 PM2（传统方式）
+
+**适用场景**: 需要更细粒度控制的场景
 
 ```bash
 # 1. 在服务器上安装依赖
@@ -415,67 +542,109 @@ pnpm install
 pnpm build
 
 # 3. 配置环境变量
+cp .env.example .env
 nano .env
 
-# 4. 安装 PM2
+# 4. 安装并启动 Redis
+sudo apt install redis-server
+sudo systemctl start redis
+sudo systemctl enable redis
+
+# 5. 安装 PM2
 npm install -g pm2
 
-# 5. 启动服务
+# 6. 启动服务
 pm2 start dist/index.js --name quickbridge-backend
 
-# 6. 设置开机自启
+# 7. 设置开机自启
 pm2 save
 pm2 startup
+
+# 8. 查看日志
+pm2 logs quickbridge-backend
 ```
 
-#### 方式 2: 使用 Docker
+#### 方式 3: 手动 Docker 部署
+
+**适用场景**: 需要自定义 Docker 配置
 
 ```bash
 # 1. 构建镜像
 cd backend
 docker build -t quickbridge-backend .
 
-# 2. 运行容器
+# 2. 启动 Redis
 docker run -d \
-  --name quickbridge \
+  --name quickbridge-redis \
+  -p 6379:6379 \
+  -v redis-data:/data \
+  redis:7-alpine redis-server --appendonly yes
+
+# 3. 启动后端
+docker run -d \
+  --name quickbridge-backend \
   -p 3000:3000 \
-  -e REDIS_HOST=your-redis-host \
+  --link quickbridge-redis:redis \
+  -e REDIS_HOST=redis \
   -e REDIS_PORT=6379 \
   -v $(pwd)/uploads:/app/uploads \
   quickbridge-backend
+
+# 4. 查看日志
+docker logs -f quickbridge-backend
 ```
-
-#### 方式 3: 使用 Vercel（Serverless）
-
-```bash
-# 1. 安装 Vercel CLI
-npm i -g vercel
-
-# 2. 登录
-vercel login
-
-# 3. 部署
-cd backend
-vercel --prod
-```
-
-**注意**: Vercel 部署需要配置 Redis（推荐使用 Upstash）。
 
 ### 插件发布
 
 #### 构建生产版本
 
-```bash
-# 1. 修改插件配置
-nano .env
-# 设置 VITE_API_BASE_URL 为生产环境后端地址
+**第一步：配置后端地址**
 
-# 2. 构建插件
+在项目根目录编辑 `.env` 文件，设置后端 API 地址：
+
+```bash
+# 编辑配置文件
+nano .env
+```
+
+根据你的部署方式配置 `VITE_API_BASE_URL`：
+
+```bash
+# 如果使用域名（推荐）
+VITE_API_BASE_URL=https://your-domain.com/api/v1
+
+# 如果使用 IP 地址
+VITE_API_BASE_URL=http://your-server-ip:3000/api/v1
+
+# 本地开发
+VITE_API_BASE_URL=http://localhost:3000/api/v1
+```
+
+**域名配置说明**：
+
+域名在 Nginx 配置文件中设置（见上面的"配置域名和 HTTPS"部分）：
+
+```nginx
+server_name your-domain.com;  # 这里配置你的域名
+```
+
+配置域名的步骤：
+1. 购买域名（阿里云、腾讯云、Cloudflare 等）
+2. 在域名管理后台添加 A 记录，指向你的服务器 IP
+3. 在服务器上配置 Nginx（见上面的示例）
+4. 使用 Certbot 配置 HTTPS 证书
+
+**第二步：构建插件**
+
+```bash
+# 1. 构建插件
 pnpm build
 
-# 3. 打包成 zip
+# 2. 打包成 zip
 pnpm zip
 ```
+
+构建完成后，会在 `dist-zip` 目录生成 `extension-YYYYMMDD-HHmmss.zip` 文件。
 
 #### 发布到 Chrome Web Store
 
@@ -484,10 +653,31 @@ pnpm zip
 3. 点击"新增项目"
 4. 上传 `extension.zip` 文件
 5. 填写应用信息：
-   - 名称、描述、图标
-   - 截图（至少 1 张）
-   - 分类、隐私政策
+   - **名称**: QuickBridge
+   - **描述**: 跨设备数据传输工具
+   - **图标**: 使用 `chrome-extension/public/icon-*.png`
+   - **截图**: 至少 1 张（1280x800 或 640x400）
+   - **分类**: 生产力工具
+   - **隐私政策**: 说明数据临时存储 24 小时
 6. 提交审核（通常 1-3 天）
+
+#### 手动分发（不发布到商店）
+
+如果不想发布到 Chrome Web Store，可以直接分发 `dist` 目录：
+
+```bash
+# 1. 打包 dist 目录
+cd dist
+zip -r ../quickbridge-extension.zip .
+
+# 2. 分享给用户
+# 用户需要：
+# - 下载并解压 zip 文件
+# - 打开 chrome://extensions
+# - 开启"开发者模式"
+# - 点击"加载已解压的扩展程序"
+# - 选择解压后的目录
+```
 
 ---
 

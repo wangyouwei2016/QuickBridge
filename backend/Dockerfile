@@ -1,8 +1,9 @@
 # QuickBridge Backend Dockerfile
+# 支持多架构：AMD64 和 ARM64
 FROM node:22-alpine
 
 # Install pnpm
-RUN npm install -g pnpm
+RUN npm install -g pnpm@10.11.0
 
 # Set working directory
 WORKDIR /app

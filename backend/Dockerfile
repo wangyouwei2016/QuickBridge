@@ -11,14 +11,17 @@ WORKDIR /app
 # Copy package files
 COPY package.json ./
 
-# Install dependencies
-RUN pnpm install --prod
+# Install all dependencies (including dev dependencies for building)
+RUN pnpm install
 
 # Copy source code
 COPY . .
 
 # Build TypeScript
 RUN pnpm build
+
+# Remove dev dependencies to reduce image size
+RUN pnpm prune --prod
 
 # Create uploads directory
 RUN mkdir -p uploads

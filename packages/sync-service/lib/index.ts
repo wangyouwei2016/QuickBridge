@@ -1,12 +1,12 @@
-import { ApiClient } from './api/client';
 import { AddressApi } from './api/address.api';
-import { TextApi } from './api/text.api';
+import { ApiClient } from './api/client';
 import { FileApi } from './api/file.api';
+import { TextApi } from './api/text.api';
 import { SyncStorage } from './storage/sync-storage';
-import { QRCodeGenerator } from './utils/qrcode';
 import { FileUtils } from './utils/file-utils';
+import { QRCodeGenerator } from './utils/qrcode';
 
-export * from './types';
+export type * from './types';
 export { SyncStorage } from './storage/sync-storage';
 export { QRCodeGenerator } from './utils/qrcode';
 export { FileUtils } from './utils/file-utils';
@@ -26,8 +26,9 @@ export class SyncService {
 }
 
 // Create default instance
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
-export const syncService = new SyncService(API_BASE_URL);
+// Note: The actual API URL is configured in the root .env file (VITE_API_BASE_URL)
+// This default value matches the production URL from .env
+export const syncService = new SyncService('https://sync.ulises.cn/api/v1');
 
 // Export utilities
 export const qrcode = QRCodeGenerator;

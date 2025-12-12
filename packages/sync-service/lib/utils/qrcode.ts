@@ -1,4 +1,4 @@
-import QRCode from 'qrcode';
+import * as QRCode from 'qrcode';
 
 export class QRCodeGenerator {
   static async generate(address: string, baseUrl: string = 'https://sync.ulises.cn'): Promise<string> {
@@ -24,7 +24,7 @@ export class QRCodeGenerator {
   static async generateCanvas(
     address: string,
     canvas: HTMLCanvasElement,
-    baseUrl: string = 'https://sync.ulises.cn'
+    baseUrl: string = 'https://sync.ulises.cn',
   ): Promise<void> {
     const url = `${baseUrl}?address=${address}`;
 

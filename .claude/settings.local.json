@@ -19,7 +19,10 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(pnpm build:*)",
-      "Bash(pnpm type-check:*)"
+      "Bash(pnpm type-check:*)",
+      "Bash(pnpm zip:*)",
+      "Bash(gh auth status:*)",
+      "Bash(gh auth login:*)"
     ]
   }
 }

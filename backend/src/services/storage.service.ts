@@ -1,7 +1,7 @@
+import { env } from '../config/env';
 import { getRedisClient } from '../config/redis';
 import { CONSTANTS } from '../utils/constants';
-import { AddressRecord, TextData, FileMetadata } from '../types';
-import { env } from '../config/env';
+import type { AddressRecord, TextData, FileMetadata } from '../types';
 
 export class StorageService {
   private async getClient() {
@@ -22,11 +22,7 @@ export class StorageService {
       isCustom,
     };
 
-    await client.setEx(
-      CONSTANTS.REDIS_KEYS.ADDRESS(address),
-      ttlSeconds,
-      JSON.stringify(record)
-    );
+    await client.setEx(CONSTANTS.REDIS_KEYS.ADDRESS(address), ttlSeconds, JSON.stringify(record));
 
     return record;
   }
@@ -45,11 +41,7 @@ export class StorageService {
     record.lastAccessedAt = now;
     record.expiresAt = now + ttlSeconds * 1000;
 
-    await client.setEx(
-      CONSTANTS.REDIS_KEYS.ADDRESS(address),
-      ttlSeconds,
-      JSON.stringify(record)
-    );
+    await client.setEx(CONSTANTS.REDIS_KEYS.ADDRESS(address), ttlSeconds, JSON.stringify(record));
 
     return record;
   }
@@ -79,26 +71,55 @@ export class StorageService {
       updatedAt: now,
     };
 
-    await client.setEx(
-      CONSTANTS.REDIS_KEYS.TEXT(address),
-      ttlSeconds,
-      JSON.stringify(textData)
-    );
+    // Save individual text data
+    await client.setEx(CONSTANTS.REDIS_KEYS.TEXT_META(address, textData.id), ttlSeconds, JSON.stringify(textData));
+
+    // Add to texts list for this address
+    await client.sAdd(CONSTANTS.REDIS_KEYS.TEXTS(address), textData.id);
+    await client.expire(CONSTANTS.REDIS_KEYS.TEXTS(address), ttlSeconds);
 
     return textData;
   }
 
-  async getText(address: string): Promise<TextData | null> {
+  async getTextMetadata(address: string, textId: string): Promise<TextData | null> {
     const client = await this.getClient();
-    const data = await client.get(CONSTANTS.REDIS_KEYS.TEXT(address));
+    const data = await client.get(CONSTANTS.REDIS_KEYS.TEXT_META(address, textId));
 
     if (!data) return null;
     return JSON.parse(data);
   }
 
-  async deleteText(address: string): Promise<void> {
+  async getTextsList(address: string): Promise<TextData[]> {
     const client = await this.getClient();
-    await client.del(CONSTANTS.REDIS_KEYS.TEXT(address));
+    const textIds = await client.sMembers(CONSTANTS.REDIS_KEYS.TEXTS(address));
+
+    const texts: TextData[] = [];
+    for (const textId of textIds) {
+      const textData = await this.getTextMetadata(address, textId);
+      if (textData) {
+        texts.push(textData);
+      }
+    }
+
+    return texts.sort((a, b) => b.createdAt - a.createdAt);
+  }
+
+  async deleteText(address: string, textId: string): Promise<void> {
+    const client = await this.getClient();
+    await client.del(CONSTANTS.REDIS_KEYS.TEXT_META(address, textId));
+    await client.sRem(CONSTANTS.REDIS_KEYS.TEXTS(address), textId);
+  }
+
+  async deleteAllTexts(address: string): Promise<string[]> {
+    const client = await this.getClient();
+    const textIds = await client.sMembers(CONSTANTS.REDIS_KEYS.TEXTS(address));
+
+    for (const textId of textIds) {
+      await client.del(CONSTANTS.REDIS_KEYS.TEXT_META(address, textId));
+    }
+
+    await client.del(CONSTANTS.REDIS_KEYS.TEXTS(address));
+    return textIds;
   }
 
   // File metadata operations
@@ -110,7 +131,7 @@ export class StorageService {
     await client.setEx(
       CONSTANTS.REDIS_KEYS.FILE_META(metadata.address, metadata.id),
       ttlSeconds,
-      JSON.stringify(metadata)
+      JSON.stringify(metadata),
     );
 
     // Add to files list for this address

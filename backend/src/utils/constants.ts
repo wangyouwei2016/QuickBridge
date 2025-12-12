@@ -16,7 +16,8 @@ export const CONSTANTS = {
   },
   REDIS_KEYS: {
     ADDRESS: (addr: string) => `addr:${addr}`,
-    TEXT: (addr: string) => `text:${addr}`,
+    TEXTS: (addr: string) => `texts:${addr}`, // Set of text IDs
+    TEXT_META: (addr: string, textId: string) => `text:${addr}:${textId}`, // Individual text data
     FILES: (addr: string) => `files:${addr}`,
     FILE_META: (addr: string, fileId: string) => `file:${addr}:${fileId}`,
   },

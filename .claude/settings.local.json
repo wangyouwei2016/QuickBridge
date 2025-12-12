@@ -17,7 +17,8 @@
       "Bash(chmod:*)",
       "Bash(bash:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(pnpm build:*)"
     ]
   }
 }

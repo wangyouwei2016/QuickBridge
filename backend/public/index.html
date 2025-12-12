@@ -387,23 +387,37 @@
                 const response = await fetch(`${API_BASE_URL}/data/${currentAddress}/list`);
                 const data = await response.json();
 
-                if (data.success) {
-                    // 更新文本
+                if (data.success && data.data && data.data.items) {
+                    const items = data.data.items;
+
+                    // 分离文本和文件
+                    const textItems = items.filter(item => item.type === 'text');
+                    const fileItems = items.filter(item => item.type === 'file');
+
+                    // 更新文本 - 显示最新的文本
                     const receivedTextDiv = document.getElementById('receivedText');
-                    if (data.data.text) {
-                        receivedTextDiv.textContent = data.data.text;
+                    if (textItems.length > 0) {
+                        // 获取完整文本内容
+                        const textResponse = await fetch(`${API_BASE_URL}/data/${currentAddress}/text`);
+                        const textData = await textResponse.json();
+
+                        if (textData.success && textData.data && textData.data.content) {
+                            receivedTextDiv.textContent = textData.data.content;
+                        } else {
+                            receivedTextDiv.innerHTML = '<span class="empty-state">暂无接收到的文本</span>';
+                        }
                     } else {
                         receivedTextDiv.innerHTML = '<span class="empty-state">暂无接收到的文本</span>';
                     }
 
                     // 更新文件列表
                     const fileListDiv = document.getElementById('fileList');
-                    if (data.data.files && data.data.files.length > 0) {
-                        fileListDiv.innerHTML = data.data.files.map(file => `
+                    if (fileItems.length > 0) {
+                        fileListDiv.innerHTML = fileItems.map(file => `
                             <div class="file-item">
-                                <span class="file-name">${file.originalName}</span>
+                                <span class="file-name">${file.filename}</span>
                                 <span class="file-size">${formatFileSize(file.size)}</span>
-                                <button class="download-btn" onclick="downloadFile('${file.id}', '${file.originalName}')">
+                                <button class="download-btn" onclick="downloadFile('${file.id}', '${file.filename}')">
                                     下载
                                 </button>
                             </div>

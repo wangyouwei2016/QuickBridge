@@ -38,6 +38,9 @@ RUN pnpm install --prod
 # Copy built files from builder
 COPY --from=builder /app/dist ./dist
 
+# Copy public directory (web frontend)
+COPY --from=builder /app/public ./public
+
 # Copy other necessary files
 COPY --from=builder /app/uploads ./uploads
 

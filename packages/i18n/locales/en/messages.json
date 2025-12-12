@@ -1,11 +1,11 @@
 {
   "extensionDescription": {
     "description": "Extension description",
-    "message": "Chrome extension boilerplate developed with Vite, React and Typescript"
+    "message": "QuickBridge - Cross-device data transfer tool for text and files"
   },
   "extensionName": {
     "description": "Extension name",
-    "message": "Chrome extension boilerplate"
+    "message": "QuickBridge"
   },
   "toggleTheme": {
     "message": "Toggle theme"

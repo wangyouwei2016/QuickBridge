@@ -1,275 +1,673 @@
+# QuickBridge
+
 <div align="center">
 
-<picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://github.com/user-attachments/assets/99cb6303-64e4-4bed-bf3f-35735353e6de" />
-    <source media="(prefers-color-scheme: light)" srcset="https://github.com/user-attachments/assets/a5dbf71c-c509-4c4f-80f4-be88a1943b0a" />
-    <img alt="Logo" src="https://github.com/user-attachments/assets/99cb6303-64e4-4bed-bf3f-35735353e6de" />
-</picture>
-
 ![](https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=react&logoColor=black)
-![](https://img.shields.io/badge/Typescript-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![](https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=node.js&logoColor=white)
+![](https://img.shields.io/badge/Express-000000?style=flat-square&logo=express&logoColor=white)
+![](https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=redis&logoColor=white)
 ![](https://badges.aleen42.com/src/vitejs.svg)
 
-![GitHub action badge](https://github.com/Jonghakseo/chrome-extension-boilerplate-react-vite/actions/workflows/build-zip.yml/badge.svg)
-![GitHub action badge](https://github.com/Jonghakseo/chrome-extension-boilerplate-react-vite/actions/workflows/lint.yml/badge.svg)
+**跨设备数据传输工具 - 简单、快速、安全**
 
-<a href="https://discord.gg/4ERQ6jgV9a" target="_blank"><img src="https://discord.com/api/guilds/1263404974830915637/widget.png"/></a>
-
-> This boilerplate
-> has [Legacy version](https://github.com/Jonghakseo/chrome-extension-boilerplate-react-vite/tree/legacy)
+[功能特性](#功能特性) • [快速开始](#快速开始) • [部署指南](#部署指南) • [技术架构](#技术架构)
 
 </div>
 
-> [!NOTE]
-> This project is listed in the [Awesome Vite](https://github.com/vitejs/awesome-vite)
+---
 
-> [!TIP]
-> Share storage state between all pages
->
-> https://github.com/user-attachments/assets/3b8e189f-6443-490e-a455-4f9570267f8c
+## 📖 目录
 
-## Table of Contents
-
-- [Intro](#intro)
-- [Features](#features)
-- [Structure](#structure)
-    - [ChromeExtension](#structure-chrome-extension)
-    - [Packages](#structure-packages)
-    - [Pages](#structure-pages)
-- [Installation](#installation)
-    - [Chrome](#installation-chrome)
-    - [Firefox](#installation-firefox)
-- [Install dependency](#install-dependency)
-    - [For root](#install-dependency-for-root)
-    - [For module](#install-dependency-for-module)
-- [Environment variables](#env-variables)
-    - [Add new](#env-variables-new)
-    - [Set via CLI](#env-variables-cli-set)
-- [Troubleshooting](#troubleshooting)
-    - [Hot module reload seems to have frozen](#hot-module-reload-seems-to-have-frozen)
-    - [Imports not resolving correctly](#imports-not-resolving-correctly)
-- [Community](#community)
-- [Debugging](#debugging)
-- [Reference](#reference)
-- [Star History](#star-history)
-- [Contributors](#contributors)
-
-## Intro
-
-This boilerplate helps you create Chrome/Firefox extensions using React and Typescript. It improves
-the build speed and development experience by using Vite and Turborepo.
-
-## Features
-
-- [React](https://reactjs.org/)
-- [TypeScript](https://www.typescriptlang.org/)
-- [Tailwindcss](https://tailwindcss.com/)
-- [Vite](https://vitejs.dev/) with [Rollup](https://rollupjs.org/)
-- [Turborepo](https://turbo.build/repo)
-- [Prettier](https://prettier.io/)
-- [ESLint](https://eslint.org/)
-- [Chrome Extensions Manifest Version 3](https://developer.chrome.com/docs/extensions/mv3/intro/)
-- [Custom i18n package](/packages/i18n/)
-- [Custom HMR (Hot Module Rebuild) plugin](/packages/hmr)
-- [End-to-end testing with WebdriverIO](https://webdriver.io/)
-
-## Installation
-
-1. Clone this repository.( ```git clone https://github.com/Jonghakseo/chrome-extension-boilerplate-react-vite``` )
-2. Ensure your node version is >= than in `.nvmrc` file, recommend to use [nvm](https://github.com/nvm-sh/nvm?tab=readme-ov-file#intro)
-3. Edit `/packages/i18n/locales/`{your locale(s)}/`messages.json`
-4. In the objects `extensionDescription` and `extensionName`, change the `message` fields (leave `description` alone)
-5. Install pnpm globally: `npm install -g pnpm`
-6. Run `pnpm install`
-7. Check if you have that configuration in your IDE/Editor:
-    - <b>VS Code</b>:
-        - Installed [ESLint extension](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
-        - Installed [Prettier extension](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
-        - Enabled `Typescript Workbench version` in settings:
-            - CTRL + SHIFT + P -> Search: `Typescript: Select Typescript version...` -> `Use Workbench version`
-            - [Read more](https://code.visualstudio.com/docs/languages/typescript#_using-newer-typescript-versions)
-        - Optional, for imports to work correctly in WSL, you might need to install the [Remote - WSL](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-wsl) extension and connect to WSL remotely from VS Code. See overview section in the extension page for more information.
-    - <b>WebStorm</b>:
-      - Configured [ESLint](https://www.jetbrains.com/help/webstorm/eslint.html#ws_eslint_configure_run_eslint_on_save)
-      - Configured [Prettier](https://prettier.io/docs/en/webstorm.html)
-      - Optional, but useful `File | Settings | Tools | Actions on Save`\
-      -> `Optimize imports` and `Reformat code`
-8. Run `pnpm update-version <version>` for change the `version` to the desired version of your extension.
-
-> [!IMPORTANT]
-> On Windows, make sure you have WSL enabled and Linux distribution (e.g. Ubuntu) installed on WSL.
-> 
-> [Installation Guide](https://learn.microsoft.com/en-us/windows/wsl/install)
-
-<b>Then, depending on the target browser:</b>
-
-### For Chrome: <a name="installation-chrome"></a>
-
-1. Run:
-    - Dev: `pnpm dev` (on Windows, you should run as administrator;
-      see [issue#456](https://github.com/Jonghakseo/chrome-extension-boilerplate-react-vite/issues/456))
-    - Prod: `pnpm build`
-2. Open in browser - `chrome://extensions`
-3. Check - <kbd>Developer mode</kbd>
-4. Click - <kbd>Load unpacked</kbd> in the upper left corner
-5. Select the `dist` directory from the boilerplate project
-
-### For Firefox: <a name="installation-firefox"></a>
-
-1. Run:
-    - Dev: `pnpm dev:firefox`
-    - Prod: `pnpm build:firefox`
-2. Open in browser - `about:debugging#/runtime/this-firefox`
-3. Click - <kbd>Load Temporary Add-on...</kbd> in the upper right corner
-4. Select the `./dist/manifest.json` file from the boilerplate project
-
-> [!NOTE]
-> In Firefox, you load add-ons in temporary mode. That means they'll disappear after each browser close. You have to
-> load the add-on on every browser launch.
-
-## Install dependency for turborepo: <a name="install-dependency"></a>
-
-### For root: <a name="install-dependency-for-root"></a>
-
-1. Run `pnpm i <package> -w`
-
-### For module: <a name="install-dependency-for-module"></a>
-
-1. Run `pnpm i <package> -F <module name>`
-
-`package` - Name of the package you want to install e.g. `nodemon` \
-`module-name` - You can find it inside each `package.json` under the key `name`, e.g. `@extension/content-script`, you
-can use only `content-script` without `@extension/` prefix
-
-## How do I disable modules I'm not using?
-
-[Read here](packages/module-manager/README.md)
-
-## Environment variables
-
-Read: [Env Documentation](packages/env/README.md)
-
-## Boilerplate structure <a name="structure"></a>
-
-### Chrome extension <a name="structure-chrome-extension"></a>
-
-The extension lives in the `chrome-extension` directory and includes the following files:
-
-- [`manifest.ts`](chrome-extension/manifest.ts) - script that outputs the `manifest.json`
-- [`src/background`](chrome-extension/src/background) - [background script](https://developer.chrome.com/docs/extensions/mv3/background_pages/)
-  (`background.service_worker` in manifest.json)
-- [`public`](chrome-extension/public/) - icons referenced in the manifest; content CSS for user's page injection
-
-> [!IMPORTANT]
-> To facilitate development, the boilerplate is configured to "Read and change all your data on all websites".
-> In production, it's best practice to limit the premissions to only the strictly necessary websites. See
-> [Declaring permissions](https://developer.chrome.com/docs/extensions/develop/concepts/declare-permissions)
-> and edit `manifest.js` accordingly.
-
-### Pages <a name="structure-pages"></a>
-
-Code that is transpiled to be part of the extension lives in the [pages](pages) directory.
-
-- [`content`](pages/content) - Scripts injected into specified pages (You can see it in console)
-- [`content-ui`](pages/content-ui) - React Components injected into specified pages (You can see it at the very bottom of pages)
-- [`content-runtime`](pages/content-runtime/src/) - [injected content scripts](https://developer.chrome.com/docs/extensions/develop/concepts/content-scripts#functionality)
-  This can be injected from e.g. `popup` like standard `content`
-- [`devtools`](pages/devtools/) - [extend the browser DevTools](https://developer.chrome.com/docs/extensions/how-to/devtools/extend-devtools#creating)
-  (`devtools_page` in manifest.json)
-- [`devtools-panel`](pages/devtools-panel/) - [DevTools panel](https://developer.chrome.com/docs/extensions/reference/api/devtools/panels)
-  for [devtools](pages/devtools/src/index.ts)
-- [`new-tab`](pages/new-tab/) - [override the default New Tab page](https://developer.chrome.com/docs/extensions/develop/ui/override-chrome-pages)
-  (`chrome_url_overrides.newtab` in manifest.json)
-- [`options`](pages/options/) - [options page](https://developer.chrome.com/docs/extensions/develop/ui/options-page)
-  (`options_page` in manifest.json)
-- [`popup`](pages/popup/) - [popup](https://developer.chrome.com/docs/extensions/reference/api/action#popup) shown when
-  clicking the extension in the toolbar
-  (`action.default_popup` in manifest.json)
-- [`side-panel`](pages/side-panel/) - [sidepanel (Chrome 114+)](https://developer.chrome.com/docs/extensions/reference/api/sidePanel)
-  (`side_panel.default_path` in manifest.json)
-
-### Packages <a name="structure-packages"></a>
-
-Some shared packages:
-
-- `dev-utils` - utilities for Chrome extension development (manifest-parser, logger)
-- `env` - exports object which contain all environment variables from `.env` and dynamically declared
-- `hmr` - custom HMR plugin for Vite, injection script for reload/refresh, HMR dev-server
-- `i18n` - custom internationalization package; provides i18n function with type safety and other validation
-- `shared` - shared code for the entire project (types, constants, custom hooks, components etc.)
-- `storage` - helpers for easier integration with [storage](https://developer.chrome.com/docs/extensions/reference/api/storage), e.g. local/session storages
-- `tailwind-config` - shared Tailwind config for entire project
-- `tsconfig` - shared tsconfig for the entire project
-- `ui` - function to merge your Tailwind config with the global one; you can save components here
-- `vite-config` - shared Vite config for the entire project
-
-Other useful packages:
-
-- `zipper` - run `pnpm zip` to pack the `dist` folder into `extension-YYYYMMDD-HHmmss.zip` inside the newly created
-  `dist-zip`
-- `module-manager` - run `pnpm module-manager` to enable/disable modules
-- `e2e` - run `pnpm e2e` for end-to-end tests of your zipped extension on different browsers
-
-## Troubleshooting
-
-### Hot module reload seems to have frozen
-
-If saving source files doesn't cause the extension HMR code to trigger a reload of the browser page, try this:
-
-1. Ctrl+C the development server and restart it (`pnpm run dev`)
-2. If you get a [`grpc` error](https://github.com/Jonghakseo/chrome-extension-boilerplate-react-vite/issues/612),
-   [kill the
-   `turbo` process](https://github.com/Jonghakseo/chrome-extension-boilerplate-react-vite/issues/612#issuecomment-2518982339)
-   and run `pnpm dev` again.
-
-### Imports not resolving correctly
-
-If you are using WSL and imports are not resolving correctly, ensure that you have connected VS Code to WSL remotely using the [Remote - WSL](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-wsl) extension.
-
-## Community
-
-To chat with other community members, you can join the [Discord](https://discord.gg/4ERQ6jgV9a) server.
-You can ask questions on that server, and you can also help others.
-
-Also, suggest new features or share any challenges you've faced while developing Chrome extensions!
-
-## Debugging
-
-If you're debugging one, you can use [Brie](https://go.briehq.com/github?utm_source=CEB) lets you capture screenshots, errors, and network activity, making it easier for us to help.
-
-## Reference
-
-- [Chrome Extensions](https://developer.chrome.com/docs/extensions)
-- [Vite Plugin](https://vitejs.dev/guide/api-plugin.html)
-- [Rollup](https://rollupjs.org/guide/en/)
-- [Turborepo](https://turbo.build/repo/docs)
-- [Rollup-plugin-chrome-extension](https://www.extend-chrome.dev/rollup-plugin)
-
-## Star History <a name="star-history"></a>
-
-<a href="https://star-history.com/#Jonghakseo/chrome-extension-boilerplate-react-vite&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Jonghakseo/chrome-extension-boilerplate-react-vite&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Jonghakseo/chrome-extension-boilerplate-react-vite&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Jonghakseo/chrome-extension-boilerplate-react-vite&type=Date" />
- </picture>
-</a>
-
-## Contributors <a name="contributors"></a>
-
-This Boilerplate is made possible thanks to all of its contributors.
-
-<a href="https://github.com/Jonghakseo/chrome-extension-boilerplate-react-vite/graphs/contributors">
-  <img width="500px" src="https://contrib.rocks/image?repo=Jonghakseo/chrome-extension-boilerplate-react-vite" alt="All Contributors"/>
-</a>
+- [项目简介](#项目简介)
+- [功能特性](#功能特性)
+- [技术栈](#技术栈)
+- [快速开始](#快速开始)
+  - [环境要求](#环境要求)
+  - [安装步骤](#安装步骤)
+  - [开发模式](#开发模式)
+- [项目结构](#项目结构)
+- [技术架构](#技术架构)
+- [部署指南](#部署指南)
+  - [后端部署](#后端部署)
+  - [插件发布](#插件发布)
+- [使用说明](#使用说明)
+- [环境变量配置](#环境变量配置)
+- [常见问题](#常见问题)
+- [开发指南](#开发指南)
 
 ---
 
-## Special Thanks To
+## 项目简介
 
-| <a href="https://jb.gg/OpenSourceSupport"><img width="40" src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png" alt="JetBrains Logo (Main) logo."></a> | <a href="https://www.linkedin.com/in/j-acks0n"><img width="40" style="border-radius:50%" src='https://avatars.githubusercontent.com/u/23139754' alt='Jackson Hong'/></a> |
-|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+QuickBridge 是一个基于地址的跨设备数据传输工具，支持在电脑、手机等多个设备之间快速传输文本和文件（最大 20MB）。无需注册账号，通过生成或加入地址即可开始传输数据。
+
+### 核心特点
+
+- 🚀 **无需注册** - 生成随机地址或自定义地址即可使用
+- 📱 **跨平台支持** - Chrome 浏览器插件 + Web 移动端
+- 📝 **多条记录保存** - 保留所有文本和文件传输历史
+- 🔄 **实时同步** - 3 秒自动轮询更新数据
+- 🔒 **临时存储** - 数据默认保存 24 小时后自动删除
+- 📦 **文件传输** - 支持最大 20MB 文件上传下载
+- 🎨 **现代化 UI** - 基于 React + Tailwind CSS
 
 ---
 
-Made by [Jonghakseo](https://jonghakseo.github.io/)
+## 功能特性
+
+### 浏览器插件端
+
+- ✅ 生成随机地址或创建自定义地址
+- ✅ 显示二维码供手机扫描
+- ✅ 发送和接收文本消息
+- ✅ 上传和下载文件
+- ✅ 查看所有传输记录（文本 + 文件）
+- ✅ 文本展开/收起功能
+- ✅ 一键复制完整文本
+- ✅ 实时同步数据
+
+### Web 移动端
+
+- ✅ 扫描二维码快速加入地址
+- ✅ 发送和接收文本
+- ✅ 上传和下载文件
+- ✅ 查看传输历史记录
+- ✅ 响应式设计，适配手机屏幕
+
+---
+
+## 技术栈
+
+### 前端（浏览器插件）
+
+- **框架**: React 18 + TypeScript
+- **构建工具**: Vite + Turborepo
+- **样式**: Tailwind CSS
+- **状态管理**: React Hooks
+- **存储**: Chrome Storage API
+- **架构**: Monorepo (pnpm workspaces)
+
+### 后端 API
+
+- **运行时**: Node.js + Express
+- **语言**: TypeScript
+- **数据库**: Redis
+- **文件存储**: 本地文件系统
+- **验证**: Zod
+- **限流**: express-rate-limit
+
+### Web 前端（移动端）
+
+- **技术**: 原生 HTML + CSS + JavaScript
+- **位置**: `backend/public/index.html`
+
+---
+
+## 快速开始
+
+### 环境要求
+
+- Node.js >= 18
+- pnpm >= 8
+- Redis >= 6
+
+### 安装步骤
+
+1. **克隆项目**
+
+```bash
+git clone https://github.com/your-username/chrome-extension-QuickBridge.git
+cd chrome-extension-QuickBridge
+```
+
+2. **安装依赖**
+
+```bash
+# 安装 pnpm（如果未安装）
+npm install -g pnpm
+
+# 安装项目依赖
+pnpm install
+```
+
+3. **配置环境变量**
+
+```bash
+# 根目录 .env（插件配置）
+cp .example.env .env
+
+# 后端 .env
+cd backend
+cp .env.example .env
+```
+
+编辑 `.env` 文件，配置必要的环境变量（详见[环境变量配置](#环境变量配置)）。
+
+4. **启动 Redis**
+
+```bash
+# macOS
+brew services start redis
+
+# Linux
+sudo systemctl start redis
+
+# Docker
+docker run -d -p 6379:6379 redis:latest
+```
+
+### 开发模式
+
+**启动后端服务**
+
+```bash
+cd backend
+pnpm dev
+# 后端运行在 http://localhost:3000
+```
+
+**启动插件开发**
+
+```bash
+# 在项目根目录
+pnpm dev
+```
+
+**加载插件到浏览器**
+
+1. 打开 Chrome 浏览器
+2. 访问 `chrome://extensions`
+3. 开启"开发者模式"
+4. 点击"加载已解压的扩展程序"
+5. 选择项目的 `dist` 目录
+
+---
+
+## 项目结构
+
+```
+chrome-extension-QuickBridge/
+├── backend/                    # 后端 API 服务
+│   ├── src/
+│   │   ├── controllers/       # 控制器层
+│   │   ├── services/          # 业务逻辑层
+│   │   ├── routes/            # 路由定义
+│   │   ├── middleware/        # 中间件
+│   │   ├── config/            # 配置文件
+│   │   ├── types/             # TypeScript 类型
+│   │   └── utils/             # 工具函数
+│   ├── public/                # Web 前端（移动端）
+│   │   └── index.html         # 单页面应用
+│   └── uploads/               # 文件上传目录
+│
+├── chrome-extension/          # 浏览器插件配置
+│   ├── manifest.ts            # Manifest 生成脚本
+│   └── public/                # 插件图标等静态资源
+│
+├── pages/                     # 插件页面
+│   ├── side-panel/           # 侧边栏（主界面）
+│   │   └── src/
+│   │       ├── components/   # React 组件
+│   │       │   ├── AddressManager.tsx
+│   │       │   ├── QRCodeDisplay.tsx
+│   │       │   ├── TextTransfer.tsx
+│   │       │   ├── FileUpload.tsx
+│   │       │   └── FileList.tsx
+│   │       └── hooks/        # 自定义 Hooks
+│   ├── popup/                # 工具栏弹窗
+│   └── options/              # 选项页面
+│
+├── packages/                  # 共享包
+│   ├── sync-service/         # 核心同步服务
+│   │   ├── lib/
+│   │   │   ├── api/         # API 客户端
+│   │   │   ├── storage/     # Chrome Storage 封装
+│   │   │   ├── types/       # 类型定义
+│   │   │   └── utils/       # 工具函数
+│   ├── storage/              # Storage 助手
+│   ├── shared/               # 共享代码
+│   ├── ui/                   # UI 组件库
+│   └── ...                   # 其他工具包
+│
+└── dist/                      # 构建输出目录
+```
+
+---
+
+## 技术架构
+
+### 系统架构图
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        用户设备                              │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ┌──────────────────┐              ┌──────────────────┐    │
+│  │  Chrome 插件端    │              │   Web 移动端      │    │
+│  │  (Side Panel)    │              │  (手机浏览器)     │    │
+│  │                  │              │                  │    │
+│  │  - 地址管理       │              │  - 扫码加入       │    │
+│  │  - 文本传输       │              │  - 文本传输       │    │
+│  │  - 文件上传       │              │  - 文件上传       │    │
+│  │  - 传输列表       │              │  - 传输列表       │    │
+│  └────────┬─────────┘              └────────┬─────────┘    │
+│           │                                 │               │
+│           │    HTTP/REST API (3秒轮询)      │               │
+│           └─────────────┬───────────────────┘               │
+│                         │                                   │
+└─────────────────────────┼───────────────────────────────────┘
+                          │
+                          ▼
+              ┌───────────────────────┐
+              │   后端 API 服务器      │
+              │   (Express + Node.js) │
+              │                       │
+              │  ┌─────────────────┐ │
+              │  │   Controllers   │ │
+              │  │   - Address     │ │
+              │  │   - Text        │ │
+              │  │   - File        │ │
+              │  └────────┬────────┘ │
+              │           │          │
+              │  ┌────────▼────────┐ │
+              │  │    Services     │ │
+              │  │   - Storage     │ │
+              │  │   - Address     │ │
+              │  │   - File        │ │
+              │  └────────┬────────┘ │
+              │           │          │
+              └───────────┼──────────┘
+                          │
+              ┌───────────┴──────────┐
+              │                      │
+              ▼                      ▼
+    ┌──────────────────┐   ┌──────────────────┐
+    │   Redis 数据库    │   │  本地文件系统     │
+    │                  │   │                  │
+    │  - 地址记录       │   │  - 上传的文件     │
+    │  - 文本数据       │   │  (uploads/)      │
+    │  - 文件元数据     │   │                  │
+    │  (24小时 TTL)    │   │                  │
+    └──────────────────┘   └──────────────────┘
+```
+
+### 数据流程图
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     数据传输流程                             │
+└─────────────────────────────────────────────────────────────┘
+
+1. 创建地址
+   用户 → 插件端 → POST /address/random
+                 → 后端创建地址记录
+                 → Redis 存储 (addr:{address})
+                 → 返回地址 + 生成二维码
+
+2. 发送文本
+   用户输入 → POST /data/{address}/text
+           → 后端保存文本
+           → Redis 存储:
+              - texts:{address} (Set)
+              - text:{address}:{textId}
+           → 返回成功
+
+3. 上传文件
+   用户选择文件 → POST /data/{address}/file
+                → Multer 处理上传
+                → 保存到 uploads/ 目录
+                → Redis 存储元数据:
+                   - files:{address} (Set)
+                   - file:{address}:{fileId}
+                → 返回文件信息
+
+4. 轮询获取数据 (每 3 秒)
+   插件端/Web端 → GET /data/{address}/list
+                → 后端查询 Redis:
+                   - 获取所有文本 (texts:{address})
+                   - 获取所有文件 (files:{address})
+                → 合并并按时间排序
+                → 返回列表 (预览前 100 字符)
+
+5. 查看完整文本
+   用户点击"展开" → GET /data/{address}/text/{textId}
+                  → 返回完整文本内容
+
+6. 下载文件
+   用户点击"下载" → GET /data/{address}/file/{fileId}
+                  → 从 uploads/ 读取文件
+                  → 返回文件流
+```
+
+### Redis 数据结构
+
+```
+Redis Key 设计:
+
+1. 地址记录
+   Key: addr:{address}
+   Type: String (JSON)
+   Value: {
+     address: string,
+     createdAt: number,
+     lastAccessedAt: number,
+     expiresAt: number,
+     isCustom: boolean
+   }
+   TTL: 24 小时
+
+2. 文本列表
+   Key: texts:{address}
+   Type: Set
+   Value: [textId1, textId2, ...]
+   TTL: 24 小时
+
+3. 文本数据
+   Key: text:{address}:{textId}
+   Type: String (JSON)
+   Value: {
+     id: string,
+     address: string,
+     content: string,
+     createdAt: number,
+     updatedAt: number
+   }
+   TTL: 24 小时
+
+4. 文件列表
+   Key: files:{address}
+   Type: Set
+   Value: [fileId1, fileId2, ...]
+   TTL: 24 小时
+
+5. 文件元数据
+   Key: file:{address}:{fileId}
+   Type: String (JSON)
+   Value: {
+     id: string,
+     address: string,
+     filename: string,
+     originalName: string,
+     mimeType: string,
+     size: number,
+     path: string,
+     createdAt: number
+   }
+   TTL: 24 小时
+```
+
+---
+
+## 部署指南
+
+### 后端部署
+
+#### 方式 1: 使用 PM2（推荐）
+
+```bash
+# 1. 在服务器上安装依赖
+cd backend
+pnpm install
+
+# 2. 构建项目
+pnpm build
+
+# 3. 配置环境变量
+nano .env
+
+# 4. 安装 PM2
+npm install -g pm2
+
+# 5. 启动服务
+pm2 start dist/index.js --name quickbridge-backend
+
+# 6. 设置开机自启
+pm2 save
+pm2 startup
+```
+
+#### 方式 2: 使用 Docker
+
+```bash
+# 1. 构建镜像
+cd backend
+docker build -t quickbridge-backend .
+
+# 2. 运行容器
+docker run -d \
+  --name quickbridge \
+  -p 3000:3000 \
+  -e REDIS_HOST=your-redis-host \
+  -e REDIS_PORT=6379 \
+  -v $(pwd)/uploads:/app/uploads \
+  quickbridge-backend
+```
+
+#### 方式 3: 使用 Vercel（Serverless）
+
+```bash
+# 1. 安装 Vercel CLI
+npm i -g vercel
+
+# 2. 登录
+vercel login
+
+# 3. 部署
+cd backend
+vercel --prod
+```
+
+**注意**: Vercel 部署需要配置 Redis（推荐使用 Upstash）。
+
+### 插件发布
+
+#### 构建生产版本
+
+```bash
+# 1. 修改插件配置
+nano .env
+# 设置 VITE_API_BASE_URL 为生产环境后端地址
+
+# 2. 构建插件
+pnpm build
+
+# 3. 打包成 zip
+pnpm zip
+```
+
+#### 发布到 Chrome Web Store
+
+1. 访问 [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole)
+2. 支付 $5 开发者注册费（一次性）
+3. 点击"新增项目"
+4. 上传 `extension.zip` 文件
+5. 填写应用信息：
+   - 名称、描述、图标
+   - 截图（至少 1 张）
+   - 分类、隐私政策
+6. 提交审核（通常 1-3 天）
+
+---
+
+## 使用说明
+
+### 插件端使用
+
+1. **创建地址**
+   - 点击"生成随机地址"或输入自定义地址
+   - 系统会生成一个唯一的传输地址
+
+2. **分享地址**
+   - 显示二维码供手机扫描
+   - 或直接分享地址字符串
+
+3. **发送数据**
+   - 在文本框输入内容，点击"发送文本"
+   - 点击"选择文件"上传文件（最大 20MB）
+
+4. **查看记录**
+   - 传输列表自动显示所有文本和文件
+   - 点击"展开"查看完整文本
+   - 点击"复制"复制文本内容
+   - 点击"下载"下载文件
+
+### Web 移动端使用
+
+1. **加入地址**
+   - 扫描插件端显示的二维码
+   - 或在 URL 中输入地址：`http://your-domain.com/?address=xxx`
+
+2. **发送和接收**
+   - 与插件端相同的操作界面
+   - 支持发送文本和上传文件
+   - 查看传输历史记录
+
+---
+
+## 环境变量配置
+
+### 插件端配置（根目录 `.env`）
+
+```bash
+# 后端 API 地址
+VITE_API_BASE_URL=http://localhost:3000/api/v1
+
+# 轮询间隔（毫秒）
+VITE_POLL_INTERVAL_MS=3000
+
+# 最大文件大小（字节）
+VITE_MAX_FILE_SIZE=20971520
+```
+
+### 后端配置（`backend/.env`）
+
+```bash
+# 服务器端口
+PORT=3000
+
+# Redis 配置
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+
+# 文件上传配置
+UPLOAD_DIR=./uploads
+MAX_FILE_SIZE=20971520
+
+# 地址过期时间（小时）
+ADDRESS_TTL_HOURS=24
+
+# CORS 配置（可选）
+CORS_ORIGIN=*
+```
+
+---
+
+## 常见问题
+
+### Q: 如何修改数据保存时间？
+
+A: 修改 `backend/.env` 中的 `ADDRESS_TTL_HOURS` 变量。
+
+### Q: 支持更大的文件吗？
+
+A: 修改以下配置：
+- 插件端：`.env` 中的 `VITE_MAX_FILE_SIZE`
+- 后端：`backend/.env` 中的 `MAX_FILE_SIZE`
+- 后端代码：`backend/src/utils/constants.ts` 中的 `MAX_FILE_SIZE`
+
+### Q: 如何自定义轮询间隔？
+
+A: 修改插件端 `.env` 中的 `VITE_POLL_INTERVAL_MS`（单位：毫秒）。
+
+### Q: Redis 连接失败怎么办？
+
+A: 检查：
+1. Redis 服务是否运行：`redis-cli ping`
+2. 配置是否正确：`backend/.env` 中的 Redis 配置
+3. 防火墙是否开放 6379 端口
+
+### Q: 插件修改后如何更新？
+
+A:
+1. 修改代码后运行 `pnpm build`
+2. 在 `chrome://extensions` 中点击"重新加载"
+3. 或重新加载 `dist` 目录
+
+---
+
+## 开发指南
+
+### 添加新功能
+
+1. **后端 API**
+   - 在 `backend/src/controllers/` 添加控制器
+   - 在 `backend/src/services/` 添加业务逻辑
+   - 在 `backend/src/routes/` 注册路由
+
+2. **插件端**
+   - 在 `packages/sync-service/lib/api/` 添加 API 客户端
+   - 在 `pages/side-panel/src/components/` 添加 React 组件
+   - 在 `pages/side-panel/src/hooks/` 添加自定义 Hooks
+
+### 代码规范
+
+```bash
+# 代码格式化
+pnpm format
+
+# 代码检查
+pnpm lint
+
+# 类型检查
+pnpm type-check
+```
+
+### 测试
+
+```bash
+# 后端测试
+cd backend
+pnpm test
+
+# E2E 测试
+pnpm e2e
+```
+
+---
+
+## 技术栈详情
+
+| 类别 | 技术 | 版本 |
+|------|------|------|
+| 前端框架 | React | 18.x |
+| 语言 | TypeScript | 5.x |
+| 构建工具 | Vite | 5.x |
+| Monorepo | Turborepo | 2.x |
+| 样式 | Tailwind CSS | 3.x |
+| 后端框架 | Express | 4.x |
+| 数据库 | Redis | 6.x+ |
+| 包管理器 | pnpm | 8.x+ |
+| Node.js | >= 18.x | - |
+
+---
+
+## 许可证
+
+MIT License
+
+---
+
+## 致谢
+
+本项目基于 [chrome-extension-boilerplate-react-vite](https://github.com/Jonghakseo/chrome-extension-boilerplate-react-vite) 模板开发。
+
+---
+
+<div align="center">
+
+**如果这个项目对你有帮助，请给个 ⭐️ Star 支持一下！**
+
+</div>

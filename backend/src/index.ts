@@ -1,26 +1,34 @@
-import express from 'express';
-import helmet from 'helmet';
-import cors from 'cors';
-import { env } from './config/env';
 import { corsOptions } from './config/cors';
-import { globalLimiter } from './middleware/rate-limiter';
-import { errorHandler } from './middleware/error-handler';
+import { env } from './config/env';
 import { getRedisClient, closeRedisClient } from './config/redis';
-import { cleanupService } from './services/cleanup.service';
+import { errorHandler } from './middleware/error-handler';
+import { globalLimiter } from './middleware/rate-limiter';
 import routes from './routes';
+import { cleanupService } from './services/cleanup.service';
+import cors from 'cors';
+import express, { json, urlencoded, static as expressStatic } from 'express';
+import helmet from 'helmet';
+import path from 'path';
 
 const app = express();
 
 // Security middleware
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: false, // 允许内联脚本用于 Web 前端
+  }),
+);
 app.use(cors(corsOptions));
 
 // Body parsing
-app.use(express.json({ limit: '2mb' }));
-app.use(express.urlencoded({ extended: true, limit: '2mb' }));
+app.use(json({ limit: '2mb' }));
+app.use(urlencoded({ extended: true, limit: '2mb' }));
 
 // Rate limiting
 app.use(globalLimiter);
+
+// Serve static files from public directory
+app.use(expressStatic(path.join(__dirname, '../public')));
 
 // API routes
 app.use(`/api/${env.API_VERSION}`, routes);
@@ -28,12 +36,15 @@ app.use(`/api/${env.API_VERSION}`, routes);
 // Error handling
 app.use(errorHandler);
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    error: 'Route not found',
-  });
+// Serve index.html for root and any non-API routes
+app.get('*', (req, res, next) => {
+  // Skip API routes
+  if (req.path.startsWith('/api/')) {
+    return next();
+  }
+
+  // Serve index.html for all other routes
+  res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
 // Start server

@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickBridge - 跨设备数据传输</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .address-display {
+            background: #f7f7f7;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 18px;
+            font-weight: bold;
+            color: #667eea;
+            text-align: center;
+        }
+
+        .section {
+            margin: 30px 0;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            resize: vertical;
+            min-height: 120px;
+            font-family: inherit;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-list {
+            margin-top: 20px;
+        }
+
+        .file-item {
+            background: #f7f7f7;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-name {
+            font-weight: 500;
+            color: #333;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .file-size {
+            color: #999;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+
+        .download-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .received-text {
+            background: #f7f7f7;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+            min-height: 60px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .empty-state {
+            color: #999;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>QuickBridge</h1>
+        <p style="color: #666; margin-bottom: 20px;">跨设备数据传输工具</p>
+
+        <div class="address-display" id="addressDisplay">
+            正在加载地址...
+        </div>
+
+        <div id="statusMessage"></div>
+
+        <!-- 文本传输 -->
+        <div class="section">
+            <div class="section-title">发送文本</div>
+            <textarea id="textInput" placeholder="输入要发送的文本..."></textarea>
+            <button onclick="sendText()" id="sendTextBtn">发送文本</button>
+        </div>
+
+        <div class="section">
+            <div class="section-title">接收的文本</div>
+            <div class="received-text" id="receivedText">
+                <span class="empty-state">暂无接收到的文本</span>
+            </div>
+        </div>
+
+        <!-- 文件上传 -->
+        <div class="section">
+            <div class="section-title">上传文件</div>
+            <div class="file-input-wrapper">
+                <button onclick="document.getElementById('fileInput').click()">选择文件</button>
+                <input type="file" id="fileInput" onchange="uploadFile()" />
+            </div>
+            <p style="color: #999; font-size: 14px; margin-top: 10px;">最大文件大小: 20MB</p>
+        </div>
+
+        <!-- 文件列表 -->
+        <div class="section">
+            <div class="section-title">文件列表</div>
+            <div class="file-list" id="fileList">
+                <div class="empty-state">暂无文件</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = '/api/v1';
+        let currentAddress = '';
+        let pollInterval = null;
+
+        // 从 URL 获取地址
+        function getAddressFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('address');
+        }
+
+        // 显示状态消息
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+            setTimeout(() => {
+                statusDiv.textContent = '';
+                statusDiv.className = '';
+            }, 3000);
+        }
+
+        // 格式化文件大小
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        // 发送文本
+        async function sendText() {
+            const text = document.getElementById('textInput').value.trim();
+            if (!text) {
+                showStatus('请输入要发送的文本', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('sendTextBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> 发送中...';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/data/${currentAddress}/text`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text }),
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showStatus('文本发送成功！', 'success');
+                    document.getElementById('textInput').value = '';
+                    fetchData(); // 刷新数据
+                } else {
+                    showStatus('发送失败: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showStatus('发送失败: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '发送文本';
+            }
+        }
+
+        // 上传文件
+        async function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+
+            if (!file) return;
+
+            if (file.size > 20 * 1024 * 1024) {
+                showStatus('文件大小超过 20MB 限制', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                showStatus('正在上传文件...', 'info');
+
+                const response = await fetch(`${API_BASE_URL}/data/${currentAddress}/file`, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showStatus('文件上传成功！', 'success');
+                    fileInput.value = '';
+                    fetchData(); // 刷新文件列表
+                } else {
+                    showStatus('上传失败: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showStatus('上传失败: ' + error.message, 'error');
+            }
+        }
+
+        // 下载文件
+        async function downloadFile(fileId, fileName) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/data/${currentAddress}/file/${fileId}`);
+
+                if (!response.ok) {
+                    throw new Error('下载失败');
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                showStatus('文件下载成功！', 'success');
+            } catch (error) {
+                showStatus('下载失败: ' + error.message, 'error');
+            }
+        }
+
+        // 获取数据
+        async function fetchData() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/data/${currentAddress}/list`);
+                const data = await response.json();
+
+                if (data.success) {
+                    // 更新文本
+                    const receivedTextDiv = document.getElementById('receivedText');
+                    if (data.data.text) {
+                        receivedTextDiv.textContent = data.data.text;
+                    } else {
+                        receivedTextDiv.innerHTML = '<span class="empty-state">暂无接收到的文本</span>';
+                    }
+
+                    // 更新文件列表
+                    const fileListDiv = document.getElementById('fileList');
+                    if (data.data.files && data.data.files.length > 0) {
+                        fileListDiv.innerHTML = data.data.files.map(file => `
+                            <div class="file-item">
+                                <span class="file-name">${file.originalName}</span>
+                                <span class="file-size">${formatFileSize(file.size)}</span>
+                                <button class="download-btn" onclick="downloadFile('${file.id}', '${file.originalName}')">
+                                    下载
+                                </button>
+                            </div>
+                        `).join('');
+                    } else {
+                        fileListDiv.innerHTML = '<div class="empty-state">暂无文件</div>';
+                    }
+                }
+            } catch (error) {
+                console.error('获取数据失败:', error);
+            }
+        }
+
+        // 检查地址是否存在
+        async function checkAddress(address) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/address/${address}/status`);
+                const data = await response.json();
+                return data.success && data.data.exists;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        // 初始化
+        async function init() {
+            const address = getAddressFromURL();
+
+            if (!address) {
+                showStatus('未提供地址参数', 'error');
+                document.getElementById('addressDisplay').textContent = '错误：未提供地址';
+                return;
+            }
+
+            currentAddress = address;
+            document.getElementById('addressDisplay').textContent = `地址: ${address}`;
+
+            // 检查地址是否存在
+            const exists = await checkAddress(address);
+            if (!exists) {
+                showStatus('地址不存在或已过期', 'error');
+                return;
+            }
+
+            // 首次加载数据
+            await fetchData();
+
+            // 开始轮询
+            pollInterval = setInterval(fetchData, 3000);
+        }
+
+        // 页面加载时初始化
+        window.addEventListener('load', init);
+
+        // 页面卸载时清理
+        window.addEventListener('beforeunload', () => {
+            if (pollInterval) {
+                clearInterval(pollInterval);
+            }
+        });
+    </script>
+</body>
+</html>

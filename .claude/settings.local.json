@@ -14,7 +14,8 @@
       "Bash(cat:*)",
       "Bash(npm install:*)",
       "Bash(npm run dev:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(bash:*)"
     ]
   }
 }

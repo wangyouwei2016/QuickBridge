@@ -2,7 +2,19 @@
   "permissions": {
     "allow": [
       "Bash(git init:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(redis-cli ping:*)",
+      "Bash(lsof:*)",
+      "Bash(pnpm install:*)",
+      "Bash(command -v:*)",
+      "Bash(bash bash-scripts/copy_env.sh:*)",
+      "Bash(brew services start:*)",
+      "Bash(brew install:*)",
+      "Bash(pnpm dev)",
+      "Bash(cat:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run dev:*)",
+      "Bash(chmod:*)"
     ]
   }
 }

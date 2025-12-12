@@ -33,7 +33,7 @@ echo -e "${GREEN}========================================${NC}"
 echo ""
 
 # 确认继续
-read -p "确认开始部署? (y/n) " -n 1 -r
+read -p "确认开始部署? (y/n) " -r REPLY
 echo
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     echo "部署已取消"

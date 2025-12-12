@@ -2,7 +2,6 @@ import { corsOptions } from './config/cors';
 import { env } from './config/env';
 import { getRedisClient, closeRedisClient } from './config/redis';
 import { errorHandler } from './middleware/error-handler';
-import { globalLimiter } from './middleware/rate-limiter';
 import routes from './routes';
 import { cleanupService } from './services/cleanup.service';
 import cors from 'cors';
@@ -24,8 +23,8 @@ app.use(cors(corsOptions));
 app.use(json({ limit: '2mb' }));
 app.use(urlencoded({ extended: true, limit: '2mb' }));
 
-// Rate limiting
-app.use(globalLimiter);
+// Rate limiting (disabled)
+// app.use(globalLimiter);
 
 // Serve static files from public directory
 app.use(expressStatic(path.join(__dirname, '../public')));

@@ -1,17 +1,18 @@
 # QuickBridge Backend Dockerfile
 # 支持多架构：AMD64 和 ARM64
-FROM node:22-alpine
+
+# Build stage
+FROM node:22-alpine AS builder
 
 # Install pnpm
 RUN npm install -g pnpm@10.11.0
 
-# Set working directory
 WORKDIR /app
 
 # Copy package files
 COPY package.json ./
 
-# Install all dependencies (including dev dependencies for building)
+# Install all dependencies
 RUN pnpm install
 
 # Copy source code
@@ -20,8 +21,25 @@ COPY . .
 # Build TypeScript
 RUN pnpm build
 
-# Remove dev dependencies to reduce image size
-RUN pnpm prune --prod
+# Production stage
+FROM node:22-alpine
+
+# Install pnpm
+RUN npm install -g pnpm@10.11.0
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json ./
+
+# Install only production dependencies
+RUN pnpm install --prod
+
+# Copy built files from builder
+COPY --from=builder /app/dist ./dist
+
+# Copy other necessary files
+COPY --from=builder /app/uploads ./uploads
 
 # Create uploads directory
 RUN mkdir -p uploads

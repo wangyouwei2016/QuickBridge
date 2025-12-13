@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QuickBridge - 跨设备数据传输</title>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <style>
         :root {
             --bg-primary: #f3f4f6;
@@ -574,6 +573,12 @@
             </div>
         </div>
 
+        <!-- 简介 -->
+        <div id="introduction" class="usage-instructions hidden">
+            <h3>简介</h3>
+            <p style="line-height: 1.6;">QuickBridge 是一个基于地址的跨设备数据传输工具，支持在电脑、手机等多个设备之间快速传输文本和文件。无需注册账号，通过生成或加入地址即可开始传输数据。</p>
+        </div>
+
         <!-- 使用说明 -->
         <div id="usageInstructions" class="usage-instructions hidden">
             <h3>使用说明</h3>
@@ -624,9 +629,17 @@
             <div class="section-title">上传文件</div>
             <div class="file-input-wrapper">
                 <button onclick="document.getElementById('fileInput').click()">选择文件</button>
-                <input type="file" id="fileInput" onchange="uploadFile()" />
+                <input type="file" id="fileInput" onchange="uploadFiles()" multiple />
             </div>
-            <p style="color: #999; font-size: 14px; margin-top: 10px;">最大文件大小: 20MB</p>
+            <p style="color: #999; font-size: 14px; margin-top: 10px;">最大文件大小: 20MB，支持多文件上传</p>
+            <div id="uploadProgress" class="hidden" style="margin-top: 10px;">
+                <div style="color: var(--text-secondary); font-size: 14px; margin-bottom: 5px;">
+                    <span id="uploadStatus">正在上传...</span>
+                </div>
+                <div style="background: var(--bg-secondary); height: 8px; border-radius: 4px; overflow: hidden;">
+                    <div id="uploadProgressBar" style="background: var(--btn-primary); height: 100%; width: 0%; transition: width 0.3s;"></div>
+                </div>
+            </div>
         </div>
 
         <!-- 文件列表 -->
@@ -675,6 +688,7 @@
         function updateUI() {
             if (appState === 'noAddress') {
                 show('addressManager');
+                show('introduction');
                 show('usageInstructions');
                 hide('addressDisplay');
                 hide('dataSection');
@@ -684,6 +698,7 @@
                 }
             } else {
                 hide('addressManager');
+                hide('introduction');
                 hide('usageInstructions');
                 show('addressDisplay');
                 show('dataSection');
@@ -908,21 +923,35 @@
             }
         }
 
-        // QR 码生成
+        // QR 码生成 - 使用 Google Charts API
         async function generateQRCode(address) {
             try {
                 const canvas = document.getElementById('qrCanvas');
+                if (!canvas) {
+                    console.error('Canvas 元素未找到');
+                    return;
+                }
+
                 const url = `https://sync.ulises.cn?address=${address}`;
-                await QRCode.toCanvas(canvas, url, {
-                    width: 96,
-                    margin: 1,
-                    color: {
-                        dark: '#000000',
-                        light: '#ffffff'
-                    }
-                });
+                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=96x96&data=${encodeURIComponent(url)}`;
+
+                // 创建图片并绘制到 canvas
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = function() {
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = 96;
+                    canvas.height = 96;
+                    ctx.drawImage(img, 0, 0, 96, 96);
+                };
+                img.onerror = function() {
+                    console.error('二维码加载失败');
+                    showStatus('二维码生成失败', 'error');
+                };
+                img.src = qrUrl;
             } catch (error) {
                 console.error('生成二维码失败:', error);
+                showStatus('二维码生成失败', 'error');
             }
         }
 
@@ -1107,41 +1136,72 @@
             }
         }
 
-        // 上传文件
-        async function uploadFile() {
+        // 上传多个文件
+        async function uploadFiles() {
             const fileInput = document.getElementById('fileInput');
-            const file = fileInput.files[0];
+            const files = Array.from(fileInput.files);
 
-            if (!file) return;
+            if (files.length === 0) return;
 
-            if (file.size > 20 * 1024 * 1024) {
-                showStatus('文件大小超过 20MB 限制', 'error');
+            // 检查文件大小
+            const oversizedFiles = files.filter(file => file.size > 20 * 1024 * 1024);
+            if (oversizedFiles.length > 0) {
+                showStatus(`以下文件超过 20MB 限制: ${oversizedFiles.map(f => f.name).join(', ')}`, 'error');
                 return;
             }
 
-            const formData = new FormData();
-            formData.append('file', file);
+            const progressDiv = document.getElementById('uploadProgress');
+            const statusSpan = document.getElementById('uploadStatus');
+            const progressBar = document.getElementById('uploadProgressBar');
 
-            try {
-                showStatus('正在上传文件...', 'info');
+            show('uploadProgress');
+            let successCount = 0;
+            let failCount = 0;
 
-                const response = await fetch(`${API_BASE_URL}/data/${currentAddress}/file`, {
-                    method: 'POST',
-                    body: formData,
-                });
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const progress = Math.round(((i + 1) / files.length) * 100);
 
-                const data = await response.json();
+                statusSpan.textContent = `正在上传 ${i + 1}/${files.length}: ${file.name}`;
+                progressBar.style.width = `${progress}%`;
 
-                if (data.success) {
-                    showStatus('文件上传成功！', 'success');
-                    fileInput.value = '';
-                    fetchData(); // 刷新文件列表
-                } else {
-                    showStatus('上传失败: ' + data.error, 'error');
+                const formData = new FormData();
+                formData.append('file', file);
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/data/${currentAddress}/file`, {
+                        method: 'POST',
+                        body: formData,
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        successCount++;
+                    } else {
+                        failCount++;
+                        console.error(`上传失败 ${file.name}:`, data.error);
+                    }
+                } catch (error) {
+                    failCount++;
+                    console.error(`上传失败 ${file.name}:`, error.message);
                 }
-            } catch (error) {
-                showStatus('上传失败: ' + error.message, 'error');
             }
+
+            // 上传完成
+            hide('uploadProgress');
+            progressBar.style.width = '0%';
+            fileInput.value = '';
+
+            if (failCount === 0) {
+                showStatus(`成功上传 ${successCount} 个文件！`, 'success');
+            } else if (successCount === 0) {
+                showStatus(`上传失败，共 ${failCount} 个文件`, 'error');
+            } else {
+                showStatus(`上传完成：成功 ${successCount} 个，失败 ${failCount} 个`, 'info');
+            }
+
+            fetchData(); // 刷新文件列表
         }
 
         // 下载文件

@@ -629,9 +629,19 @@
             <div class="section-title">上传文件</div>
             <div class="file-input-wrapper">
                 <button onclick="document.getElementById('fileInput').click()">选择文件</button>
-                <input type="file" id="fileInput" onchange="uploadFiles()" multiple />
+                <input type="file" id="fileInput" onchange="handleFileSelect()" multiple />
             </div>
             <p style="color: #999; font-size: 14px; margin-top: 10px;">最大文件大小: 20MB，支持多文件上传</p>
+
+            <!-- 已选择的文件列表 -->
+            <div id="selectedFiles" class="hidden" style="margin-top: 10px;">
+                <div style="color: var(--text-secondary); font-size: 14px; margin-bottom: 5px;">
+                    已选择 <span id="selectedFileCount">0</span> 个文件
+                </div>
+                <div id="selectedFileList" style="max-height: 150px; overflow-y: auto; margin-bottom: 10px;"></div>
+                <button onclick="uploadFiles()" id="uploadBtn" class="btn-secondary">上传文件</button>
+            </div>
+
             <div id="uploadProgress" class="hidden" style="margin-top: 10px;">
                 <div style="color: var(--text-secondary); font-size: 14px; margin-bottom: 5px;">
                     <span id="uploadStatus">正在上传...</span>
@@ -1136,6 +1146,37 @@
             }
         }
 
+        // 处理文件选择
+        function handleFileSelect() {
+            const fileInput = document.getElementById('fileInput');
+            const files = Array.from(fileInput.files);
+
+            if (files.length === 0) {
+                hide('selectedFiles');
+                return;
+            }
+
+            // 检查文件大小
+            const oversizedFiles = files.filter(file => file.size > 20 * 1024 * 1024);
+            if (oversizedFiles.length > 0) {
+                showStatus(`以下文件超过 20MB 限制: ${oversizedFiles.map(f => f.name).join(', ')}`, 'error');
+                fileInput.value = '';
+                hide('selectedFiles');
+                return;
+            }
+
+            // 显示已选择的文件
+            document.getElementById('selectedFileCount').textContent = files.length;
+            const fileListDiv = document.getElementById('selectedFileList');
+            fileListDiv.innerHTML = files.map(file => `
+                <div style="padding: 0.5rem; background: var(--bg-secondary); border-radius: 4px; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: var(--text-primary); font-size: 0.875rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${file.name}</span>
+                    <span style="color: var(--text-secondary); font-size: 0.75rem; margin-left: 0.5rem; white-space: nowrap;">${formatFileSize(file.size)}</span>
+                </div>
+            `).join('');
+            show('selectedFiles');
+        }
+
         // 上传多个文件
         async function uploadFiles() {
             const fileInput = document.getElementById('fileInput');
@@ -1143,17 +1184,15 @@
 
             if (files.length === 0) return;
 
-            // 检查文件大小
-            const oversizedFiles = files.filter(file => file.size > 20 * 1024 * 1024);
-            if (oversizedFiles.length > 0) {
-                showStatus(`以下文件超过 20MB 限制: ${oversizedFiles.map(f => f.name).join(', ')}`, 'error');
-                return;
-            }
+            const uploadBtn = document.getElementById('uploadBtn');
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = '上传中...';
 
             const progressDiv = document.getElementById('uploadProgress');
             const statusSpan = document.getElementById('uploadStatus');
             const progressBar = document.getElementById('uploadProgressBar');
 
+            hide('selectedFiles');
             show('uploadProgress');
             let successCount = 0;
             let failCount = 0;
@@ -1192,6 +1231,8 @@
             hide('uploadProgress');
             progressBar.style.width = '0%';
             fileInput.value = '';
+            uploadBtn.disabled = false;
+            uploadBtn.textContent = '上传文件';
 
             if (failCount === 0) {
                 showStatus(`成功上传 ${successCount} 个文件！`, 'success');

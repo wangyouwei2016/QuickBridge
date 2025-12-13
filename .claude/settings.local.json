@@ -22,7 +22,9 @@
       "Bash(pnpm type-check:*)",
       "Bash(pnpm zip:*)",
       "Bash(gh auth status:*)",
-      "Bash(gh auth login:*)"
+      "Bash(gh auth login:*)",
+      "Bash(pnpm clean:bundle:*)",
+      "Bash(grep:*)"
     ]
   }
 }

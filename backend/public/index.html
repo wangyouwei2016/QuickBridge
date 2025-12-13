@@ -4,7 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QuickBridge - 跨设备数据传输</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <style>
+        :root {
+            --bg-primary: #f3f4f6;
+            --bg-card: #ffffff;
+            --bg-secondary: #e5e7eb;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --btn-primary: #2563eb;
+            --btn-primary-hover: #1d4ed8;
+            --btn-secondary: #16a34a;
+            --btn-secondary-hover: #15803d;
+            --btn-danger: #dc2626;
+            --btn-danger-hover: #b91c1c;
+            --border: #d1d5db;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-primary: #111827;
+                --bg-card: #1f2937;
+                --bg-secondary: #374151;
+                --text-primary: #f9fafb;
+                --text-secondary: #9ca3af;
+                --border: #4b5563;
+                --shadow: rgba(0, 0, 0, 0.3);
+            }
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -13,38 +42,112 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--bg-primary);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+            padding: 1rem;
         }
 
         .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            background: var(--bg-card);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px var(--shadow);
             max-width: 600px;
             width: 100%;
-            padding: 40px;
+            padding: 1.5rem;
+            margin: 0 auto;
+        }
+
+        @media (min-width: 640px) {
+            body {
+                padding: 2rem;
+            }
+            .container {
+                padding: 2rem;
+            }
         }
 
         h1 {
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 28px;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-size: 1.875rem;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px var(--shadow);
+        }
+
+        .mode-toggle {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .mode-toggle button {
+            flex: 1;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mode-toggle button.active {
+            background: var(--btn-primary);
+            color: white;
+        }
+
+        .mode-toggle button:not(.active) {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
         }
 
         .address-display {
-            background: #f7f7f7;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px 0;
-            font-size: 18px;
-            font-weight: bold;
-            color: #667eea;
+            background: var(--bg-secondary);
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
             text-align: center;
+        }
+
+        .address-text {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+            margin-bottom: 1rem;
+        }
+
+        .qr-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        #qrCanvas {
+            border: 2px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
         }
 
         .section {
@@ -58,48 +161,85 @@
             margin-bottom: 15px;
         }
 
-        textarea {
+        input, textarea {
             width: 100%;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
-            resize: vertical;
-            min-height: 120px;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+            background: var(--bg-card);
+            color: var(--text-primary);
             font-family: inherit;
         }
 
-        textarea:focus {
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        input:focus, textarea:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--btn-primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        @media (max-width: 640px) {
+            input, textarea {
+                font-size: 16px; /* Prevent zoom on iOS */
+            }
         }
 
         button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--btn-primary);
             color: white;
             border: none;
-            padding: 15px 30px;
-            border-radius: 10px;
-            font-size: 16px;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
             width: 100%;
-            margin-top: 10px;
-            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 0.5rem;
+            transition: background 0.2s;
         }
 
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        button:active {
-            transform: translateY(0);
+        button:hover:not(:disabled) {
+            background: var(--btn-primary-hover);
         }
 
         button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+        }
+
+        button.btn-secondary {
+            background: var(--btn-secondary);
+        }
+
+        button.btn-secondary:hover:not(:disabled) {
+            background: var(--btn-secondary-hover);
+        }
+
+        button.btn-danger {
+            background: var(--btn-danger);
+        }
+
+        button.btn-danger:hover:not(:disabled) {
+            background: var(--btn-danger-hover);
+        }
+
+        button.btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            width: auto;
+            margin-top: 0;
+        }
+
+        @media (max-width: 640px) {
+            button {
+                min-height: 44px; /* iOS touch target */
+                font-size: 16px;
+            }
         }
 
         .file-input-wrapper {
@@ -115,22 +255,23 @@
         }
 
         .file-list {
-            margin-top: 20px;
+            margin-top: 1rem;
         }
 
-        .file-item {
-            background: #f7f7f7;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 10px;
+        .file-item, .text-item {
+            background: var(--bg-secondary);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 0.5rem;
         }
 
         .file-name {
             font-weight: 500;
-            color: #333;
+            color: var(--text-primary);
             flex: 1;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -138,42 +279,64 @@
         }
 
         .file-size {
-            color: #999;
-            font-size: 14px;
-            margin-left: 10px;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-left: 0.5rem;
         }
 
         .download-btn {
-            background: #667eea;
+            background: var(--btn-secondary);
             color: white;
             border: none;
-            padding: 8px 16px;
+            padding: 0.5rem 1rem;
             border-radius: 6px;
-            font-size: 14px;
+            font-size: 0.875rem;
             cursor: pointer;
-            margin-left: 10px;
+            margin-left: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .download-btn:hover {
+            background: var(--btn-secondary-hover);
         }
 
         .status {
-            padding: 10px;
+            padding: 0.75rem;
             border-radius: 8px;
-            margin: 10px 0;
-            font-size: 14px;
+            margin: 0.75rem 0;
+            font-size: 0.875rem;
         }
 
         .status.success {
-            background: #d4edda;
-            color: #155724;
+            background: #d1fae5;
+            color: #065f46;
         }
 
         .status.error {
-            background: #f8d7da;
-            color: #721c24;
+            background: #fee2e2;
+            color: #991b1b;
         }
 
         .status.info {
-            background: #d1ecf1;
-            color: #0c5460;
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .status.success {
+                background: #064e3b;
+                color: #6ee7b7;
+            }
+
+            .status.error {
+                background: #7f1d1d;
+                color: #fca5a5;
+            }
+
+            .status.info {
+                background: #1e3a8a;
+                color: #93c5fd;
+            }
         }
 
         .loading {
@@ -253,26 +416,194 @@
         }
 
         .text-item-preview {
-            color: #666;
+            color: var(--text-secondary);
             font-style: italic;
         }
 
         .empty-state {
-            color: #999;
+            color: var(--text-secondary);
             font-style: italic;
+            text-align: center;
+            padding: 2rem 1rem;
+        }
+
+        .usage-instructions {
+            background: var(--bg-secondary);
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .usage-instructions h3 {
+            color: var(--text-primary);
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .usage-instructions ol {
+            margin-left: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .usage-instructions li {
+            margin-bottom: 0.5rem;
+            line-height: 1.5;
+        }
+
+        .usage-instructions ul {
+            margin-left: 1.5rem;
+            margin-top: 0.25rem;
+            list-style-type: disc;
+        }
+
+        .recent-addresses {
+            margin-top: 1rem;
+        }
+
+        .recent-addresses h4 {
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .recent-address-btn {
+            width: 100%;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            cursor: pointer;
+            margin-bottom: 0.5rem;
+            text-align: left;
+            transition: background 0.2s;
+        }
+
+        .recent-address-btn:hover:not(:disabled) {
+            background: var(--border);
+        }
+
+        .divider {
+            position: relative;
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .divider span {
+            position: relative;
+            background: var(--bg-card);
+            padding: 0 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .validation-error {
+            color: var(--btn-danger);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>QuickBridge</h1>
-        <p style="color: #666; margin-bottom: 20px;">跨设备数据传输工具</p>
-
-        <div class="address-display" id="addressDisplay">
-            正在加载地址...
-        </div>
+        <p class="subtitle">跨设备数据传输</p>
 
         <div id="statusMessage"></div>
+
+        <!-- 地址管理界面 (无地址时显示) -->
+        <div id="addressManager" class="card hidden">
+            <div class="mode-toggle">
+                <button id="createModeBtn" class="active" onclick="setMode('create')">创建地址</button>
+                <button id="joinModeBtn" onclick="setMode('join')">加入地址</button>
+            </div>
+
+            <!-- 创建模式 -->
+            <div id="createMode">
+                <button onclick="generateRandomAddress()" id="randomBtn">生成随机地址</button>
+
+                <div class="divider"><span>或</span></div>
+
+                <form onsubmit="createCustomAddress(event)">
+                    <input
+                        type="text"
+                        id="customAddressInput"
+                        placeholder="自定义地址 (5-20位字母数字)"
+                        minlength="5"
+                        maxlength="20"
+                        pattern="[a-zA-Z0-9]+"
+                    />
+                    <div id="customAddressError" class="validation-error hidden"></div>
+                    <button type="submit" class="btn-secondary" id="createCustomBtn">创建自定义地址</button>
+                </form>
+            </div>
+
+            <!-- 加入模式 -->
+            <div id="joinMode" class="hidden">
+                <form onsubmit="joinAddress(event)">
+                    <input
+                        type="text"
+                        id="joinAddressInput"
+                        placeholder="输入地址"
+                    />
+                    <div id="joinAddressError" class="validation-error hidden"></div>
+                    <button type="submit" id="joinBtn">加入地址</button>
+                </form>
+
+                <div id="recentAddresses" class="recent-addresses hidden">
+                    <h4>最近使用</h4>
+                    <div id="recentAddressList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 使用说明 -->
+        <div id="usageInstructions" class="usage-instructions hidden">
+            <h3>使用说明</h3>
+            <ol>
+                <li>创建新地址或加入已有地址</li>
+                <li>发送文本或上传文件（最大20MB）</li>
+                <li>在其他设备上：
+                    <ul>
+                        <li>扫描二维码直接访问</li>
+                        <li>或访问 sync.ulises.cn 并输入地址</li>
+                    </ul>
+                </li>
+                <li>地址有效期24小时</li>
+            </ol>
+        </div>
+
+        <!-- 地址显示和二维码 (有地址时显示) -->
+        <div id="addressDisplay" class="card hidden">
+            <div class="address-text" id="addressText"></div>
+            <div class="qr-container">
+                <canvas id="qrCanvas"></canvas>
+                <div class="button-group">
+                    <button onclick="downloadQRCode()" class="btn-small btn-secondary">下载二维码</button>
+                    <button onclick="leaveAddress()" class="btn-small btn-danger">离开地址</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 数据传输区域 (有地址时显示) -->
+        <div id="dataSection" class="hidden">
 
         <!-- 文本传输 -->
         <div class="section">
@@ -309,13 +640,82 @@
 
     <script>
         const API_BASE_URL = '/api/v1';
+        const STORAGE_KEY = 'quickbridge_recent_addresses';
+        const MAX_RECENT = 5;
+
+        // 状态管理
+        let appState = 'noAddress'; // 'noAddress' | 'hasAddress'
         let currentAddress = '';
+        let currentMode = 'create'; // 'create' | 'join'
         let pollInterval = null;
 
         // 从 URL 获取地址
         function getAddressFromURL() {
             const params = new URLSearchParams(window.location.search);
             return params.get('address');
+        }
+
+        // UI 辅助函数
+        function show(elementId) {
+            const el = document.getElementById(elementId);
+            if (el) el.classList.remove('hidden');
+        }
+
+        function hide(elementId) {
+            const el = document.getElementById(elementId);
+            if (el) el.classList.add('hidden');
+        }
+
+        // 状态切换
+        function setState(newState) {
+            appState = newState;
+            updateUI();
+        }
+
+        function updateUI() {
+            if (appState === 'noAddress') {
+                show('addressManager');
+                show('usageInstructions');
+                hide('addressDisplay');
+                hide('dataSection');
+                if (pollInterval) {
+                    clearInterval(pollInterval);
+                    pollInterval = null;
+                }
+            } else {
+                hide('addressManager');
+                hide('usageInstructions');
+                show('addressDisplay');
+                show('dataSection');
+                document.getElementById('addressText').textContent = `当前地址: ${currentAddress}`;
+                generateQRCode(currentAddress);
+                if (!pollInterval) {
+                    fetchData();
+                    pollInterval = setInterval(fetchData, 3000);
+                }
+            }
+        }
+
+        // 模式切换
+        function setMode(mode) {
+            currentMode = mode;
+            const createBtn = document.getElementById('createModeBtn');
+            const joinBtn = document.getElementById('joinModeBtn');
+            const createMode = document.getElementById('createMode');
+            const joinMode = document.getElementById('joinMode');
+
+            if (mode === 'create') {
+                createBtn.classList.add('active');
+                joinBtn.classList.remove('active');
+                show('createMode');
+                hide('joinMode');
+            } else {
+                joinBtn.classList.add('active');
+                createBtn.classList.remove('active');
+                hide('createMode');
+                show('joinMode');
+                loadRecentAddresses();
+            }
         }
 
         // 显示状态消息
@@ -327,6 +727,220 @@
                 statusDiv.textContent = '';
                 statusDiv.className = '';
             }, 3000);
+        }
+
+        // localStorage 管理
+        function saveRecentAddress(address) {
+            try {
+                const recent = getRecentAddresses();
+                const updated = [address, ...recent.filter(a => a !== address)].slice(0, MAX_RECENT);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+            } catch (error) {
+                console.error('保存最近地址失败:', error);
+            }
+        }
+
+        function getRecentAddresses() {
+            try {
+                return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            } catch {
+                return [];
+            }
+        }
+
+        function loadRecentAddresses() {
+            const recent = getRecentAddresses();
+            const container = document.getElementById('recentAddressList');
+            const recentSection = document.getElementById('recentAddresses');
+
+            if (recent.length > 0) {
+                container.innerHTML = recent.map(addr =>
+                    `<button class="recent-address-btn" onclick="selectRecentAddress('${addr}')">${addr}</button>`
+                ).join('');
+                show('recentAddresses');
+            } else {
+                hide('recentAddresses');
+            }
+        }
+
+        async function selectRecentAddress(address) {
+            document.getElementById('joinAddressInput').value = address;
+            await joinAddress(new Event('submit'));
+        }
+
+        // 地址验证
+        function validateAddress(address) {
+            const pattern = /^[a-zA-Z0-9]{5,20}$/;
+            return pattern.test(address);
+        }
+
+        // 生成随机地址
+        async function generateRandomAddress() {
+            const btn = document.getElementById('randomBtn');
+            btn.disabled = true;
+            btn.textContent = '生成中...';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/address/random`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.data.address) {
+                    currentAddress = data.data.address;
+                    saveRecentAddress(currentAddress);
+                    setState('hasAddress');
+                    showStatus('地址创建成功！', 'success');
+                } else {
+                    showStatus('创建失败: ' + (data.error || '未知错误'), 'error');
+                }
+            } catch (error) {
+                showStatus('创建失败: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '生成随机地址';
+            }
+        }
+
+        // 创建自定义地址
+        async function createCustomAddress(event) {
+            event.preventDefault();
+
+            const input = document.getElementById('customAddressInput');
+            const errorDiv = document.getElementById('customAddressError');
+            const btn = document.getElementById('createCustomBtn');
+            const address = input.value.trim();
+
+            errorDiv.classList.add('hidden');
+
+            if (!validateAddress(address)) {
+                errorDiv.textContent = '地址必须是5-20位字母或数字';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = '创建中...';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/address/custom`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ address })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    currentAddress = address;
+                    saveRecentAddress(currentAddress);
+                    setState('hasAddress');
+                    showStatus('地址创建成功！', 'success');
+                    input.value = '';
+                } else {
+                    const errorMsg = data.error || '未知错误';
+                    if (errorMsg.includes('已存在') || errorMsg.includes('exists')) {
+                        errorDiv.textContent = '地址已被使用，请尝试其他地址';
+                        errorDiv.classList.remove('hidden');
+                    } else {
+                        showStatus('创建失败: ' + errorMsg, 'error');
+                    }
+                }
+            } catch (error) {
+                showStatus('创建失败: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '创建自定义地址';
+            }
+        }
+
+        // 加入地址
+        async function joinAddress(event) {
+            event.preventDefault();
+
+            const input = document.getElementById('joinAddressInput');
+            const errorDiv = document.getElementById('joinAddressError');
+            const btn = document.getElementById('joinBtn');
+            const address = input.value.trim();
+
+            errorDiv.classList.add('hidden');
+
+            if (!address) {
+                errorDiv.textContent = '请输入地址';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = '加入中...';
+
+            try {
+                const exists = await checkAddress(address);
+
+                if (exists) {
+                    currentAddress = address;
+                    saveRecentAddress(currentAddress);
+                    setState('hasAddress');
+                    showStatus('成功加入地址！', 'success');
+                    input.value = '';
+                } else {
+                    errorDiv.textContent = '地址不存在或已过期';
+                    errorDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                showStatus('加入失败: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '加入地址';
+            }
+        }
+
+        // 离开地址
+        function leaveAddress() {
+            if (confirm('确定要离开当前地址吗？')) {
+                currentAddress = '';
+                setState('noAddress');
+                showStatus('已离开地址', 'info');
+                // 清除 URL 参数
+                window.history.pushState({}, '', window.location.pathname);
+            }
+        }
+
+        // QR 码生成
+        async function generateQRCode(address) {
+            try {
+                const canvas = document.getElementById('qrCanvas');
+                const url = `https://sync.ulises.cn?address=${address}`;
+                await QRCode.toCanvas(canvas, url, {
+                    width: 96,
+                    margin: 1,
+                    color: {
+                        dark: '#000000',
+                        light: '#ffffff'
+                    }
+                });
+            } catch (error) {
+                console.error('生成二维码失败:', error);
+            }
+        }
+
+        // 下载 QR 码
+        function downloadQRCode() {
+            try {
+                const canvas = document.getElementById('qrCanvas');
+                const url = canvas.toDataURL('image/png');
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `quickbridge-${currentAddress}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                showStatus('二维码已下载', 'success');
+            } catch (error) {
+                showStatus('下载失败: ' + error.message, 'error');
+            }
         }
 
         // 格式化文件大小
@@ -606,29 +1220,23 @@
 
         // 初始化
         async function init() {
-            const address = getAddressFromURL();
+            const urlAddress = getAddressFromURL();
 
-            if (!address) {
-                showStatus('未提供地址参数', 'error');
-                document.getElementById('addressDisplay').textContent = '错误：未提供地址';
-                return;
+            // 1. 检查 URL 参数 (向后兼容)
+            if (urlAddress) {
+                const exists = await checkAddress(urlAddress);
+                if (exists) {
+                    currentAddress = urlAddress;
+                    saveRecentAddress(urlAddress);
+                    setState('hasAddress');
+                    return;
+                } else {
+                    showStatus('地址不存在或已过期', 'error');
+                }
             }
 
-            currentAddress = address;
-            document.getElementById('addressDisplay').textContent = `地址: ${address}`;
-
-            // 检查地址是否存在
-            const exists = await checkAddress(address);
-            if (!exists) {
-                showStatus('地址不存在或已过期', 'error');
-                return;
-            }
-
-            // 首次加载数据
-            await fetchData();
-
-            // 开始轮询
-            pollInterval = setInterval(fetchData, 3000);
+            // 2. 没有 URL 参数 - 显示地址管理界面
+            setState('noAddress');
         }
 
         // 页面加载时初始化

@@ -76,14 +76,15 @@ export const AddressManager = ({
     <div className="rounded-lg bg-white p-4 shadow dark:bg-gray-800">
       <div className="mb-4 flex gap-2">
         <button
-          onClick={() => setMode('create')}
+          onClick={handleGenerateRandom}
+          disabled={isLoading}
           className={cn(
             'flex-1 rounded px-4 py-2 font-medium transition-colors',
             mode === 'create'
-              ? 'bg-blue-600 text-white'
+              ? 'bg-blue-600 text-white hover:bg-blue-700'
               : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
           )}>
-          创建地址
+          {isLoading && mode === 'create' ? '生成中...' : '生成随机地址'}
         </button>
         <button
           onClick={() => setMode('join')}
@@ -103,22 +104,6 @@ export const AddressManager = ({
 
       {mode === 'create' ? (
         <div className="space-y-3">
-          <button
-            onClick={handleGenerateRandom}
-            disabled={isLoading}
-            className="w-full rounded bg-blue-600 px-4 py-3 font-medium text-white transition-colors hover:bg-blue-700 disabled:bg-gray-400">
-            {isLoading ? '生成中...' : '生成随机地址'}
-          </button>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="bg-white px-2 text-gray-500 dark:bg-gray-800">或</span>
-            </div>
-          </div>
-
           <form onSubmit={handleCreateCustom} className="space-y-2">
             <input
               type="text"

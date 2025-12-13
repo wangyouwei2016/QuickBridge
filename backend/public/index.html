@@ -530,16 +530,12 @@
         <!-- 地址管理界面 (无地址时显示) -->
         <div id="addressManager" class="card hidden">
             <div class="mode-toggle">
-                <button id="createModeBtn" class="active" onclick="setMode('create')">创建地址</button>
+                <button id="createModeBtn" class="active" onclick="generateRandomAddress()">生成随机地址</button>
                 <button id="joinModeBtn" onclick="setMode('join')">加入地址</button>
             </div>
 
             <!-- 创建模式 -->
             <div id="createMode">
-                <button onclick="generateRandomAddress()" id="randomBtn">生成随机地址</button>
-
-                <div class="divider"><span>或</span></div>
-
                 <form onsubmit="createCustomAddress(event)">
                     <input
                         type="text"
@@ -729,12 +725,7 @@
             const createMode = document.getElementById('createMode');
             const joinMode = document.getElementById('joinMode');
 
-            if (mode === 'create') {
-                createBtn.classList.add('active');
-                joinBtn.classList.remove('active');
-                show('createMode');
-                hide('joinMode');
-            } else {
+            if (mode === 'join') {
                 joinBtn.classList.add('active');
                 createBtn.classList.remove('active');
                 hide('createMode');
@@ -801,7 +792,8 @@
 
         // 生成随机地址
         async function generateRandomAddress() {
-            const btn = document.getElementById('randomBtn');
+            const btn = document.getElementById('createModeBtn');
+            const originalText = btn.textContent;
             btn.disabled = true;
             btn.textContent = '生成中...';
 
@@ -825,7 +817,7 @@
                 showStatus('创建失败: ' + error.message, 'error');
             } finally {
                 btn.disabled = false;
-                btn.textContent = '生成随机地址';
+                btn.textContent = originalText;
             }
         }
 

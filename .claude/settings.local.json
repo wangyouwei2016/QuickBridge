@@ -31,7 +31,9 @@
       "Bash(git restore:*)",
       "Bash(gh release delete:*)",
       "Bash(gh release create:*)",
-      "Bash(\"release/quickbridge-extension-v1.0.2.zip\" )"
+      "Bash(\"release/quickbridge-extension-v1.0.2.zip\" )",
+      "Bash(gh release view:*)",
+      "Bash(gh release edit:*)"
     ]
   }
 }

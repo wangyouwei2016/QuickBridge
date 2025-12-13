@@ -12,6 +12,7 @@ export const FileList = ({ items, address, onError }: FileListProps) => {
   const [expandedTextId, setExpandedTextId] = useState<string | null>(null);
   const [fullTextContent, setFullTextContent] = useState<{ [key: string]: string }>({});
   const [loadingTextId, setLoadingTextId] = useState<string | null>(null);
+  const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
 
   const handleDownload = async (item: TransferItem) => {
     if (item.type !== 'file') return;
@@ -67,11 +68,15 @@ export const FileList = ({ items, address, onError }: FileListProps) => {
         if (response.success && response.data) {
           await navigator.clipboard.writeText(response.data.content);
           setFullTextContent(prev => ({ ...prev, [item.id]: response.data.content }));
+          setCopiedItemId(item.id);
+          setTimeout(() => setCopiedItemId(null), 2000);
           return;
         }
       }
 
       await navigator.clipboard.writeText(textToCopy);
+      setCopiedItemId(item.id);
+      setTimeout(() => setCopiedItemId(null), 2000);
     } catch (err) {
       onError(err instanceof Error ? err.message : '复制失败');
     }
@@ -123,8 +128,10 @@ export const FileList = ({ items, address, onError }: FileListProps) => {
                   </button>
                   <button
                     onClick={() => handleCopyText(item)}
-                    className="rounded bg-blue-600 px-3 py-1 text-sm text-white transition-colors hover:bg-blue-700">
-                    复制
+                    className={`rounded px-3 py-1 text-sm text-white transition-colors ${
+                      copiedItemId === item.id ? 'bg-green-500 hover:bg-green-600' : 'bg-blue-600 hover:bg-blue-700'
+                    }`}>
+                    {copiedItemId === item.id ? '已复制!' : '复制'}
                   </button>
                 </div>
               </div>

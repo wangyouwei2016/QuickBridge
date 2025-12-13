@@ -1,6 +1,6 @@
 {
   "name": "quickbridge-backend",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "QuickBridge backend API for cross-device data transfer",
   "main": "dist/index.js",
   "scripts": {
@@ -9,7 +9,11 @@
     "start": "node dist/index.js",
     "test": "vitest"
   },
-  "keywords": ["quickbridge", "data-transfer", "sync"],
+  "keywords": [
+    "quickbridge",
+    "data-transfer",
+    "sync"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {

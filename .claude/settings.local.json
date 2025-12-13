@@ -28,7 +28,10 @@
       "Bash(pnpm update-version:*)",
       "Bash(curl:*)",
       "Bash(pnpm add:*)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(gh release delete:*)",
+      "Bash(gh release create:*)",
+      "Bash(\"release/quickbridge-extension-v1.0.2.zip\" )"
     ]
   }
 }

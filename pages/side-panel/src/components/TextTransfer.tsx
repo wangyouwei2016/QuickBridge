@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
 import { syncService } from '@extension/sync-service';
+import { useState, useEffect } from 'react';
 
 interface TextTransferProps {
   address: string;
@@ -11,6 +11,7 @@ export const TextTransfer = ({ address, onError }: TextTransferProps) => {
   const [savedText, setSavedText] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
 
   useEffect(() => {
     const fetchText = async () => {
@@ -41,6 +42,7 @@ export const TextTransfer = ({ address, onError }: TextTransferProps) => {
       const response = await syncService.text.save(address, text);
       if (response.success) {
         setSavedText(text);
+        setText(''); // Clear input after successful save
       } else {
         onError(response.error || '保存失败');
       }
@@ -51,50 +53,56 @@ export const TextTransfer = ({ address, onError }: TextTransferProps) => {
     }
   };
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(savedText);
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(savedText);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000); // Hide success message after 2 seconds
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
   };
 
   const hasChanges = text !== savedText;
 
   return (
-    <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">文本传输</h3>
+    <div className="rounded-lg bg-white p-4 shadow dark:bg-gray-800">
+      <h3 className="mb-3 text-lg font-semibold text-gray-900 dark:text-gray-100">文本传输</h3>
 
       {isLoading ? (
-        <div className="text-center py-8 text-gray-500">加载中...</div>
+        <div className="py-8 text-center text-gray-500">加载中...</div>
       ) : (
         <div className="space-y-3">
           <textarea
             value={text}
             onChange={e => setText(e.target.value)}
             placeholder="输入要传输的文本..."
-            className="w-full h-40 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="h-40 w-full resize-none rounded border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
           />
 
           <div className="flex gap-2">
             <button
               onClick={handleSave}
               disabled={isSaving || !hasChanges || !text.trim()}
-              className="flex-1 py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded font-medium transition-colors"
-            >
+              className="flex-1 rounded bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:bg-gray-400">
               {isSaving ? '保存中...' : hasChanges ? '保存' : '已保存'}
             </button>
 
             {savedText && (
               <button
                 onClick={handleCopy}
-                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded transition-colors"
-              >
-                复制
+                className={`rounded px-4 py-2 transition-colors ${
+                  copySuccess
+                    ? 'bg-green-500 text-white'
+                    : 'bg-gray-200 text-gray-900 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600'
+                }`}>
+                {copySuccess ? '已复制!' : '复制'}
               </button>
             )}
           </div>
 
           {savedText && (
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              字符数: {savedText.length} / 1,048,576
-            </div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">字符数: {savedText.length} / 1,048,576</div>
           )}
         </div>
       )}

@@ -25,7 +25,10 @@
       "Bash(gh auth login:*)",
       "Bash(pnpm clean:bundle:*)",
       "Bash(grep:*)",
-      "Bash(pnpm update-version:*)"
+      "Bash(pnpm update-version:*)",
+      "Bash(curl:*)",
+      "Bash(pnpm add:*)",
+      "Bash(git restore:*)"
     ]
   }
 }

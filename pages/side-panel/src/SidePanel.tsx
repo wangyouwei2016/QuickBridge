@@ -1,14 +1,14 @@
 import '@src/SidePanel.css';
-import { useState } from 'react';
-import { withErrorBoundary, withSuspense } from '@extension/shared';
-import { ErrorDisplay, LoadingSpinner } from '@extension/ui';
 import { AddressManager } from './components/AddressManager';
+import { FileList } from './components/FileList';
+import { FileUpload } from './components/FileUpload';
 import { QRCodeDisplay } from './components/QRCodeDisplay';
 import { TextTransfer } from './components/TextTransfer';
-import { FileUpload } from './components/FileUpload';
-import { FileList } from './components/FileList';
-import { useSyncService } from './hooks/useSyncService';
 import { usePolling } from './hooks/usePolling';
+import { useSyncService } from './hooks/useSyncService';
+import { withErrorBoundary, withSuspense } from '@extension/shared';
+import { ErrorDisplay, LoadingSpinner } from '@extension/ui';
+import { useState } from 'react';
 
 const SidePanel = () => {
   const [error, setError] = useState<string | null>(null);
@@ -21,17 +21,17 @@ const SidePanel = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-4">
-      <div className="max-w-2xl mx-auto space-y-4">
+    <div className="min-h-screen bg-gray-100 p-4 dark:bg-gray-900">
+      <div className="mx-auto max-w-2xl space-y-4">
         {/* Header */}
-        <div className="text-center py-4">
+        <div className="py-4 text-center">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">QuickBridge</h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">跨设备数据传输</p>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">跨设备数据传输</p>
         </div>
 
         {/* Error Display */}
         {(error || syncService.error || polling.error) && (
-          <div className="p-4 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg">
+          <div className="rounded-lg bg-red-100 p-4 text-red-700 dark:bg-red-900/30 dark:text-red-400">
             {error || syncService.error || polling.error}
           </div>
         )}
@@ -47,21 +47,17 @@ const SidePanel = () => {
           isLoading={syncService.isLoading}
         />
 
-        {/* QR Code Display */}
-        {syncService.currentAddress && <QRCodeDisplay address={syncService.currentAddress} />}
+        {/* QR Code Display with Current Address */}
+        {syncService.currentAddress && (
+          <QRCodeDisplay address={syncService.currentAddress} onLeave={syncService.leaveAddress} />
+        )}
 
         {/* Text Transfer */}
-        {syncService.currentAddress && (
-          <TextTransfer address={syncService.currentAddress} onError={handleError} />
-        )}
+        {syncService.currentAddress && <TextTransfer address={syncService.currentAddress} onError={handleError} />}
 
         {/* File Upload */}
         {syncService.currentAddress && (
-          <FileUpload
-            address={syncService.currentAddress}
-            onUploadComplete={polling.refresh}
-            onError={handleError}
-          />
+          <FileUpload address={syncService.currentAddress} onUploadComplete={polling.refresh} onError={handleError} />
         )}
 
         {/* File List */}

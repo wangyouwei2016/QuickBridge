@@ -24,7 +24,8 @@
       "Bash(gh auth status:*)",
       "Bash(gh auth login:*)",
       "Bash(pnpm clean:bundle:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(pnpm update-version:*)"
     ]
   }
 }

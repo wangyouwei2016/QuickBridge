@@ -77,7 +77,7 @@ export const TextTransfer = ({ address, onError }: TextTransferProps) => {
             value={text}
             onChange={e => setText(e.target.value)}
             placeholder="输入要传输的文本..."
-            className="h-40 w-full resize-none rounded border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+            className="h-24 w-full resize-none rounded border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
           />
 
           <div className="flex gap-2">
@@ -100,10 +100,6 @@ export const TextTransfer = ({ address, onError }: TextTransferProps) => {
               </button>
             )}
           </div>
-
-          {savedText && (
-            <div className="text-sm text-gray-500 dark:text-gray-400">字符数: {savedText.length} / 1,048,576</div>
-          )}
         </div>
       )}
     </div>

@@ -1,12 +1,16 @@
 import * as QRCode from 'qrcode';
 
 export class QRCodeGenerator {
-  static async generate(address: string, baseUrl: string = 'https://sync.ulises.cn'): Promise<string> {
+  static async generate(
+    address: string,
+    baseUrl: string = 'https://sync.ulises.cn',
+    width: number = 300,
+  ): Promise<string> {
     const url = `${baseUrl}?address=${address}`;
 
     try {
       const dataUrl = await QRCode.toDataURL(url, {
-        width: 300,
+        width,
         margin: 2,
         color: {
           dark: '#000000',
@@ -25,12 +29,13 @@ export class QRCodeGenerator {
     address: string,
     canvas: HTMLCanvasElement,
     baseUrl: string = 'https://sync.ulises.cn',
+    width: number = 300,
   ): Promise<void> {
     const url = `${baseUrl}?address=${address}`;
 
     try {
       await QRCode.toCanvas(canvas, url, {
-        width: 300,
+        width,
         margin: 2,
         color: {
           dark: '#000000',

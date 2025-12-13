@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import { cn } from '@extension/ui';
+import { useState } from 'react';
 
 interface AddressManagerProps {
   currentAddress: string | null;
@@ -17,7 +17,6 @@ export const AddressManager = ({
   onGenerateRandom,
   onCreateCustom,
   onJoin,
-  onLeave,
   isLoading,
 }: AddressManagerProps) => {
   const [customAddress, setCustomAddress] = useState('');
@@ -70,55 +69,36 @@ export const AddressManager = ({
   };
 
   if (currentAddress) {
-    return (
-      <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">当前地址</h3>
-          <button
-            onClick={onLeave}
-            className="px-3 py-1 text-sm text-red-600 hover:text-red-700 dark:text-red-400"
-          >
-            离开
-          </button>
-        </div>
-        <div className="p-3 bg-gray-100 dark:bg-gray-700 rounded font-mono text-lg text-center">
-          {currentAddress}
-        </div>
-      </div>
-    );
+    return null; // Address display is now handled by QRCodeDisplay
   }
 
   return (
-    <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
-      <div className="flex gap-2 mb-4">
+    <div className="rounded-lg bg-white p-4 shadow dark:bg-gray-800">
+      <div className="mb-4 flex gap-2">
         <button
           onClick={() => setMode('create')}
           className={cn(
-            'flex-1 py-2 px-4 rounded font-medium transition-colors',
+            'flex-1 rounded px-4 py-2 font-medium transition-colors',
             mode === 'create'
               ? 'bg-blue-600 text-white'
-              : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
-          )}
-        >
+              : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
+          )}>
           创建地址
         </button>
         <button
           onClick={() => setMode('join')}
           className={cn(
-            'flex-1 py-2 px-4 rounded font-medium transition-colors',
+            'flex-1 rounded px-4 py-2 font-medium transition-colors',
             mode === 'join'
               ? 'bg-blue-600 text-white'
-              : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
-          )}
-        >
+              : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
+          )}>
           加入地址
         </button>
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded">
-          {error}
-        </div>
+        <div className="mb-4 rounded bg-red-100 p-3 text-red-700 dark:bg-red-900/30 dark:text-red-400">{error}</div>
       )}
 
       {mode === 'create' ? (
@@ -126,8 +106,7 @@ export const AddressManager = ({
           <button
             onClick={handleGenerateRandom}
             disabled={isLoading}
-            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded font-medium transition-colors"
-          >
+            className="w-full rounded bg-blue-600 px-4 py-3 font-medium text-white transition-colors hover:bg-blue-700 disabled:bg-gray-400">
             {isLoading ? '生成中...' : '生成随机地址'}
           </button>
 
@@ -136,7 +115,7 @@ export const AddressManager = ({
               <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white dark:bg-gray-800 text-gray-500">或</span>
+              <span className="bg-white px-2 text-gray-500 dark:bg-gray-800">或</span>
             </div>
           </div>
 
@@ -146,7 +125,7 @@ export const AddressManager = ({
               value={customAddress}
               onChange={e => setCustomAddress(e.target.value)}
               placeholder="自定义地址 (5位以上)"
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              className="w-full rounded border border-gray-300 bg-white px-4 py-2 text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
               minLength={5}
               maxLength={20}
               pattern="[a-zA-Z0-9]+"
@@ -155,8 +134,7 @@ export const AddressManager = ({
             <button
               type="submit"
               disabled={isLoading || !customAddress.trim()}
-              className="w-full py-2 px-4 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded font-medium transition-colors"
-            >
+              className="w-full rounded bg-green-600 px-4 py-2 font-medium text-white transition-colors hover:bg-green-700 disabled:bg-gray-400">
               {isLoading ? '创建中...' : '创建自定义地址'}
             </button>
           </form>
@@ -169,29 +147,27 @@ export const AddressManager = ({
               value={joinAddress}
               onChange={e => setJoinAddress(e.target.value)}
               placeholder="输入地址"
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              className="w-full rounded border border-gray-300 bg-white px-4 py-2 text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
               disabled={isLoading}
             />
             <button
               type="submit"
               disabled={isLoading || !joinAddress.trim()}
-              className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded font-medium transition-colors"
-            >
+              className="w-full rounded bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:bg-gray-400">
               {isLoading ? '加入中...' : '加入地址'}
             </button>
           </form>
 
           {recentAddresses.length > 0 && (
             <div className="mt-4">
-              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">最近使用</h4>
+              <h4 className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">最近使用</h4>
               <div className="space-y-1">
                 {recentAddresses.map(addr => (
                   <button
                     key={addr}
                     onClick={() => handleSelectRecent(addr)}
                     disabled={isLoading}
-                    className="w-full px-3 py-2 text-left bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded text-sm font-mono transition-colors"
-                  >
+                    className="w-full rounded bg-gray-100 px-3 py-2 text-left font-mono text-sm transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600">
                     {addr}
                   </button>
                 ))}

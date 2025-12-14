@@ -421,42 +421,49 @@
             border-radius: 8px;
             margin-bottom: 0.75rem;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 0.5rem;
+            flex-direction: column;
+            gap: 0.75rem;
         }
 
         .file-name {
             font-weight: 500;
             color: var(--text-primary);
-            flex: 1;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            word-break: break-word;
+            line-height: 1.4;
         }
 
         .file-size {
             color: var(--text-secondary);
             font-size: 0.875rem;
-            margin-left: 0.5rem;
+            margin-top: 0.25rem;
+        }
+
+        .file-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            flex: 1;
         }
 
         .download-btn {
             background: var(--btn-secondary);
             color: white;
             border: none;
-            padding: 0.5rem 0.75rem;
-            border-radius: 6px;
+            padding: 0.625rem 1rem;
+            border-radius: 8px;
             font-size: 0.875rem;
+            font-weight: 600;
             cursor: pointer;
-            margin-left: 0.5rem;
             white-space: nowrap;
-            flex-shrink: 0;
-            min-width: auto;
+            width: 100%;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(22, 163, 74, 0.2);
         }
 
         .download-btn:hover {
             background: var(--btn-secondary-hover);
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+            transform: translateY(-1px);
         }
 
         .status {
@@ -1267,35 +1274,64 @@
 
         // 处理文件选择
         function handleFileSelect(event) {
-            const fileInput = event?.target || document.getElementById('fileInput');
-            const files = Array.from(fileInput.files || []);
+            try {
+                const fileInput = event?.target || document.getElementById('fileInput');
+                console.log('handleFileSelect called, fileInput:', fileInput);
 
-            console.log('Files selected:', files.length); // Debug log
+                if (!fileInput || !fileInput.files) {
+                    console.error('No file input or files found');
+                    return;
+                }
 
-            if (files.length === 0) {
-                hide('selectedFiles');
-                return;
+                const files = Array.from(fileInput.files);
+                console.log('Files selected:', files.length, files);
+
+                if (files.length === 0) {
+                    hide('selectedFiles');
+                    return;
+                }
+
+                // 检查文件大小
+                const oversizedFiles = files.filter(file => file.size > 20 * 1024 * 1024);
+                if (oversizedFiles.length > 0) {
+                    showStatus(`以下文件超过 20MB 限制: ${oversizedFiles.map(f => f.name).join(', ')}`, 'error');
+                    fileInput.value = '';
+                    hide('selectedFiles');
+                    return;
+                }
+
+                // 显示已选择的文件
+                const countElement = document.getElementById('selectedFileCount');
+                const fileListDiv = document.getElementById('selectedFileList');
+                const selectedFilesDiv = document.getElementById('selectedFiles');
+
+                console.log('Elements found:', {countElement, fileListDiv, selectedFilesDiv});
+
+                if (countElement) {
+                    countElement.textContent = files.length;
+                }
+
+                if (fileListDiv) {
+                    fileListDiv.innerHTML = files.map(file => `
+                        <div style="padding: 0.5rem; background: var(--bg-secondary); border-radius: 4px; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: var(--text-primary); font-size: 0.875rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">${file.name}</span>
+                            <span style="color: var(--text-secondary); font-size: 0.75rem; margin-left: 0.5rem; white-space: nowrap;">${formatFileSize(file.size)}</span>
+                        </div>
+                    `).join('');
+                }
+
+                // 强制显示选中文件区域
+                if (selectedFilesDiv) {
+                    selectedFilesDiv.classList.remove('hidden');
+                    selectedFilesDiv.style.display = 'block';
+                    console.log('selectedFiles div shown');
+                }
+
+                showStatus(`已选择 ${files.length} 个文件`, 'success');
+            } catch (error) {
+                console.error('Error in handleFileSelect:', error);
+                showStatus('文件选择出错: ' + error.message, 'error');
             }
-
-            // 检查文件大小
-            const oversizedFiles = files.filter(file => file.size > 20 * 1024 * 1024);
-            if (oversizedFiles.length > 0) {
-                showStatus(`以下文件超过 20MB 限制: ${oversizedFiles.map(f => f.name).join(', ')}`, 'error');
-                fileInput.value = '';
-                hide('selectedFiles');
-                return;
-            }
-
-            // 显示已选择的文件
-            document.getElementById('selectedFileCount').textContent = files.length;
-            const fileListDiv = document.getElementById('selectedFileList');
-            fileListDiv.innerHTML = files.map(file => `
-                <div style="padding: 0.5rem; background: var(--bg-secondary); border-radius: 4px; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: var(--text-primary); font-size: 0.875rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">${file.name}</span>
-                    <span style="color: var(--text-secondary); font-size: 0.75rem; margin-left: 0.5rem; white-space: nowrap;">${formatFileSize(file.size)}</span>
-                </div>
-            `).join('');
-            show('selectedFiles');
         }
 
         // 上传多个文件
@@ -1413,12 +1449,17 @@
                     if (fileItems.length > 0) {
                         fileListDiv.innerHTML = fileItems.map(file => `
                             <div class="file-item">
-                                <div style="flex: 1; min-width: 0;">
+                                <div class="file-info">
                                     <div class="file-name">${file.filename}</div>
                                     <div class="file-size">${formatFileSize(file.size)}</div>
                                 </div>
                                 <button class="download-btn" onclick="downloadFile('${file.id}', '${file.filename}')">
-                                    下载
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7 10 12 15 17 10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                    下载文件
                                 </button>
                             </div>
                         `).join('');

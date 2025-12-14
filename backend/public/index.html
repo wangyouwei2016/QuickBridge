@@ -1274,64 +1274,68 @@
 
         // 处理文件选择
         function handleFileSelect(event) {
-            try {
-                const fileInput = event?.target || document.getElementById('fileInput');
-                console.log('handleFileSelect called, fileInput:', fileInput);
+            // 使用 setTimeout 确保在移动浏览器中文件选择完成后再处理
+            setTimeout(() => {
+                try {
+                    const fileInput = document.getElementById('fileInput');
+                    console.log('handleFileSelect called, fileInput:', fileInput);
 
-                if (!fileInput || !fileInput.files) {
-                    console.error('No file input or files found');
-                    return;
+                    if (!fileInput || !fileInput.files) {
+                        console.error('No file input or files found');
+                        return;
+                    }
+
+                    const files = Array.from(fileInput.files);
+                    console.log('Files selected:', files.length, files);
+
+                    if (files.length === 0) {
+                        hide('selectedFiles');
+                        return;
+                    }
+
+                    // 检查文件大小
+                    const oversizedFiles = files.filter(file => file.size > 20 * 1024 * 1024);
+                    if (oversizedFiles.length > 0) {
+                        showStatus(`以下文件超过 20MB 限制: ${oversizedFiles.map(f => f.name).join(', ')}`, 'error');
+                        fileInput.value = '';
+                        hide('selectedFiles');
+                        return;
+                    }
+
+                    // 显示已选择的文件
+                    const countElement = document.getElementById('selectedFileCount');
+                    const fileListDiv = document.getElementById('selectedFileList');
+                    const selectedFilesDiv = document.getElementById('selectedFiles');
+
+                    console.log('Elements found:', {countElement, fileListDiv, selectedFilesDiv});
+
+                    if (countElement) {
+                        countElement.textContent = files.length;
+                    }
+
+                    if (fileListDiv) {
+                        fileListDiv.innerHTML = files.map(file => `
+                            <div style="padding: 0.5rem; background: var(--bg-secondary); border-radius: 4px; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+                                <span style="color: var(--text-primary); font-size: 0.875rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">${file.name}</span>
+                                <span style="color: var(--text-secondary); font-size: 0.75rem; margin-left: 0.5rem; white-space: nowrap;">${formatFileSize(file.size)}</span>
+                            </div>
+                        `).join('');
+                    }
+
+                    // 强制显示选中文件区域 - 移除 hidden class 并设置 display
+                    if (selectedFilesDiv) {
+                        selectedFilesDiv.classList.remove('hidden');
+                        selectedFilesDiv.style.display = 'block';
+                        selectedFilesDiv.style.visibility = 'visible';
+                        console.log('selectedFiles div shown, classList:', selectedFilesDiv.classList.toString());
+                    }
+
+                    showStatus(`已选择 ${files.length} 个文件`, 'success');
+                } catch (error) {
+                    console.error('Error in handleFileSelect:', error);
+                    showStatus('文件选择出错: ' + error.message, 'error');
                 }
-
-                const files = Array.from(fileInput.files);
-                console.log('Files selected:', files.length, files);
-
-                if (files.length === 0) {
-                    hide('selectedFiles');
-                    return;
-                }
-
-                // 检查文件大小
-                const oversizedFiles = files.filter(file => file.size > 20 * 1024 * 1024);
-                if (oversizedFiles.length > 0) {
-                    showStatus(`以下文件超过 20MB 限制: ${oversizedFiles.map(f => f.name).join(', ')}`, 'error');
-                    fileInput.value = '';
-                    hide('selectedFiles');
-                    return;
-                }
-
-                // 显示已选择的文件
-                const countElement = document.getElementById('selectedFileCount');
-                const fileListDiv = document.getElementById('selectedFileList');
-                const selectedFilesDiv = document.getElementById('selectedFiles');
-
-                console.log('Elements found:', {countElement, fileListDiv, selectedFilesDiv});
-
-                if (countElement) {
-                    countElement.textContent = files.length;
-                }
-
-                if (fileListDiv) {
-                    fileListDiv.innerHTML = files.map(file => `
-                        <div style="padding: 0.5rem; background: var(--bg-secondary); border-radius: 4px; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
-                            <span style="color: var(--text-primary); font-size: 0.875rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">${file.name}</span>
-                            <span style="color: var(--text-secondary); font-size: 0.75rem; margin-left: 0.5rem; white-space: nowrap;">${formatFileSize(file.size)}</span>
-                        </div>
-                    `).join('');
-                }
-
-                // 强制显示选中文件区域
-                if (selectedFilesDiv) {
-                    selectedFilesDiv.classList.remove('hidden');
-                    selectedFilesDiv.style.display = 'block';
-                    console.log('selectedFiles div shown');
-                }
-
-                showStatus(`已选择 ${files.length} 个文件`, 'success');
-            } catch (error) {
-                console.error('Error in handleFileSelect:', error);
-                showStatus('文件选择出错: ' + error.message, 'error');
-            }
+            }, 100); // 100ms 延迟确保文件选择完成
         }
 
         // 上传多个文件

@@ -762,8 +762,8 @@
         <div class="section">
             <div class="section-title">上传文件</div>
             <div class="file-input-wrapper">
-                <button onclick="document.getElementById('fileInput').click()" type="button">选择文件</button>
-                <input type="file" id="fileInput" onchange="handleFileSelect(event)" multiple accept="*/*" />
+                <button onclick="triggerFileSelect()" type="button">选择文件</button>
+                <input type="file" id="fileInput" multiple accept="*/*" style="position: absolute; left: -9999px;" />
             </div>
             <p style="color: #999; font-size: 14px; margin-top: 10px;">最大文件大小: 20MB，支持多文件上传</p>
 
@@ -1272,13 +1272,38 @@
             }
         }
 
+        // 检测是否为微信浏览器
+        function isWeChatBrowser() {
+            const ua = navigator.userAgent.toLowerCase();
+            return ua.indexOf('micromessenger') !== -1;
+        }
+
+        // 触发文件选择
+        function triggerFileSelect() {
+            const fileInput = document.getElementById('fileInput');
+            if (fileInput) {
+                // 微信浏览器需要特殊处理
+                if (isWeChatBrowser()) {
+                    console.log('WeChat browser detected');
+                    // 在微信浏览器中，先移除旧的监听器，再添加新的
+                    fileInput.removeEventListener('change', handleFileSelect);
+                    fileInput.addEventListener('change', handleFileSelect);
+                }
+                fileInput.click();
+            }
+        }
+
         // 处理文件选择
-        function handleFileSelect(event) {
-            // 使用 setTimeout 确保在移动浏览器中文件选择完成后再处理
+        function handleFileSelect() {
+            // 微信浏览器需要延迟处理
+            const delay = isWeChatBrowser() ? 300 : 0;
+
             setTimeout(() => {
                 try {
                     const fileInput = document.getElementById('fileInput');
                     console.log('handleFileSelect called, fileInput:', fileInput);
+                    console.log('User Agent:', navigator.userAgent);
+                    console.log('Is WeChat:', isWeChatBrowser());
 
                     if (!fileInput || !fileInput.files) {
                         console.error('No file input or files found');
@@ -1327,6 +1352,8 @@
                         selectedFilesDiv.classList.remove('hidden');
                         selectedFilesDiv.style.display = 'block';
                         selectedFilesDiv.style.visibility = 'visible';
+                        // 强制重绘
+                        selectedFilesDiv.offsetHeight;
                         console.log('selectedFiles div shown, classList:', selectedFilesDiv.classList.toString());
                     }
 
@@ -1335,7 +1362,7 @@
                     console.error('Error in handleFileSelect:', error);
                     showStatus('文件选择出错: ' + error.message, 'error');
                 }
-            }, 100); // 100ms 延迟确保文件选择完成
+            }, delay);
         }
 
         // 上传多个文件
@@ -1509,7 +1536,16 @@
         }
 
         // 页面加载时初始化
-        window.addEventListener('load', init);
+        window.addEventListener('load', () => {
+            init();
+
+            // 为文件输入添加 change 事件监听器
+            const fileInput = document.getElementById('fileInput');
+            if (fileInput) {
+                fileInput.addEventListener('change', handleFileSelect);
+                console.log('File input change listener added');
+            }
+        });
 
 
         // 页面卸载时清理

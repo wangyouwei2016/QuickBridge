@@ -445,12 +445,14 @@
             background: var(--btn-secondary);
             color: white;
             border: none;
-            padding: 0.5rem 1rem;
+            padding: 0.5rem 0.75rem;
             border-radius: 6px;
             font-size: 0.875rem;
             cursor: pointer;
             margin-left: 0.5rem;
             white-space: nowrap;
+            flex-shrink: 0;
+            min-width: auto;
         }
 
         .download-btn:hover {
@@ -753,8 +755,8 @@
         <div class="section">
             <div class="section-title">上传文件</div>
             <div class="file-input-wrapper">
-                <button onclick="document.getElementById('fileInput').click()">选择文件</button>
-                <input type="file" id="fileInput" onchange="handleFileSelect()" multiple />
+                <button onclick="document.getElementById('fileInput').click()" type="button">选择文件</button>
+                <input type="file" id="fileInput" onchange="handleFileSelect(event)" multiple accept="*/*" />
             </div>
             <p style="color: #999; font-size: 14px; margin-top: 10px;">最大文件大小: 20MB，支持多文件上传</p>
 
@@ -1264,9 +1266,11 @@
         }
 
         // 处理文件选择
-        function handleFileSelect() {
-            const fileInput = document.getElementById('fileInput');
-            const files = Array.from(fileInput.files);
+        function handleFileSelect(event) {
+            const fileInput = event?.target || document.getElementById('fileInput');
+            const files = Array.from(fileInput.files || []);
+
+            console.log('Files selected:', files.length); // Debug log
 
             if (files.length === 0) {
                 hide('selectedFiles');
@@ -1287,7 +1291,7 @@
             const fileListDiv = document.getElementById('selectedFileList');
             fileListDiv.innerHTML = files.map(file => `
                 <div style="padding: 0.5rem; background: var(--bg-secondary); border-radius: 4px; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: var(--text-primary); font-size: 0.875rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${file.name}</span>
+                    <span style="color: var(--text-primary); font-size: 0.875rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">${file.name}</span>
                     <span style="color: var(--text-secondary); font-size: 0.75rem; margin-left: 0.5rem; white-space: nowrap;">${formatFileSize(file.size)}</span>
                 </div>
             `).join('');

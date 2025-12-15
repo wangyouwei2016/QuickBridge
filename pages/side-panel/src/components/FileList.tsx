@@ -222,27 +222,29 @@ export const FileList = ({ items, address, onError, onRefresh }: FileListProps) 
           <div
             key={item.id}
             className="rounded-lg bg-gray-50 p-3 transition-colors hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0 flex-1">
-                <div className="mb-1 flex items-center gap-2">
-                  <svg className="h-4 w-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M8 4a3 3 0 00-3 3v4a5 5 0 0010 0V7a1 1 0 112 0v4a7 7 0 11-14 0V7a5 5 0 0110 0v4a3 3 0 11-6 0V7a1 1 0 012 0v4a1 1 0 102 0V7a3 3 0 00-3-3z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span className="truncate text-sm font-medium text-gray-700 dark:text-gray-300">{item.filename}</span>
-                </div>
-                <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-500">
-                  <span>{item.size ? FileUtils.formatFileSize(item.size) : '-'}</span>
-                  <span>{FileUtils.formatDate(item.createdAt)}</span>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-start gap-2">
+                <svg className="h-4 w-4 flex-shrink-0 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M8 4a3 3 0 00-3 3v4a5 5 0 0010 0V7a1 1 0 112 0v4a7 7 0 11-14 0V7a5 5 0 0110 0v4a3 3 0 11-6 0V7a1 1 0 012 0v4a1 1 0 102 0V7a3 3 0 00-3-3z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <div className="min-w-0 flex-1">
+                  <div className="break-words text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {item.filename}
+                  </div>
+                  <div className="mt-1 flex items-center gap-3 text-xs text-gray-500 dark:text-gray-500">
+                    <span>{item.size ? FileUtils.formatFileSize(item.size) : '-'}</span>
+                    <span>{FileUtils.formatDate(item.createdAt)}</span>
+                  </div>
                 </div>
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={() => handleDownload(item)}
-                  className={`rounded px-3 py-1 text-sm text-white transition-colors ${
+                  className={`flex-1 rounded px-3 py-1 text-sm text-white transition-colors ${
                     downloadedItemId === item.id ? 'bg-blue-500 hover:bg-blue-600' : 'bg-green-600 hover:bg-green-700'
                   }`}>
                   {downloadedItemId === item.id ? '已下载!' : '下载'}
@@ -250,7 +252,7 @@ export const FileList = ({ items, address, onError, onRefresh }: FileListProps) 
                 <button
                   onClick={() => handleDelete(item)}
                   disabled={deletingItemId === item.id}
-                  className="rounded bg-red-600 px-3 py-1 text-sm text-white transition-colors hover:bg-red-700 disabled:bg-gray-400">
+                  className="flex-1 rounded bg-red-600 px-3 py-1 text-sm text-white transition-colors hover:bg-red-700 disabled:bg-gray-400">
                   {deletingItemId === item.id ? '删除中...' : '删除'}
                 </button>
               </div>

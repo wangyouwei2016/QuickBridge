@@ -1,10 +1,10 @@
+import { storageService } from './storage.service';
+import { env } from '../config/env';
+import { AppError } from '../middleware/error-handler';
+import { AddressGenerator } from '../utils/address-generator';
 import fs from 'fs/promises';
 import path from 'path';
-import { env } from '../config/env';
-import { FileMetadata } from '../types';
-import { storageService } from './storage.service';
-import { AddressGenerator } from '../utils/address-generator';
-import { AppError } from '../middleware/error-handler';
+import type { FileMetadata } from '../types';
 
 export class FileService {
   async ensureUploadDir(address: string): Promise<string> {
@@ -13,12 +13,21 @@ export class FileService {
     return addressDir;
   }
 
-  async saveFile(
-    address: string,
-    file: Express.Multer.File
-  ): Promise<FileMetadata> {
+  async saveFile(address: string, file: Express.Multer.File): Promise<FileMetadata> {
     const fileId = AddressGenerator.generateFileId();
-    const sanitizedName = AddressGenerator.sanitizeFilename(file.originalname);
+
+    // 修复 Multer 的文件名编码问题
+    // Multer 可能会将 UTF-8 编码的文件名错误地解析为 Latin1
+    let originalName = file.originalname;
+    try {
+      // 尝试修复编码
+      originalName = Buffer.from(file.originalname, 'latin1').toString('utf-8');
+    } catch (err) {
+      // 如果转换失败，使用原始文件名
+      console.warn('Failed to decode filename, using original:', err);
+    }
+
+    const sanitizedName = AddressGenerator.sanitizeFilename(originalName);
     const filename = `${fileId}-${sanitizedName}`;
 
     const addressDir = await this.ensureUploadDir(address);
@@ -31,7 +40,7 @@ export class FileService {
       id: fileId,
       address,
       filename,
-      originalName: file.originalname,
+      originalName: originalName,
       mimeType: file.mimetype,
       size: file.size,
       path: filePath,
@@ -74,7 +83,7 @@ export class FileService {
   }
 
   async deleteAllFiles(address: string): Promise<void> {
-    const fileIds = await storageService.deleteAllFiles(address);
+    await storageService.deleteAllFiles(address);
 
     // Delete directory
     const addressDir = path.join(env.UPLOAD_DIR, address);

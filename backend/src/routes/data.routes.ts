@@ -10,10 +10,12 @@ const router = Router();
 router.post('/:address/text', textController.saveText);
 router.get('/:address/text', textController.getText);
 router.get('/:address/text/:id', textController.getTextById);
+router.delete('/:address/text/:id', textController.deleteText);
 
 // File operations
 router.post('/:address/file', fileUploadLimiter, upload.single('file'), handleMulterError, fileController.uploadFile);
 router.get('/:address/file/:id', fileDownloadLimiter, fileController.downloadFile);
+router.delete('/:address/file/:id', fileController.deleteFile);
 
 // List all data
 router.get('/:address/list', fileController.listData);

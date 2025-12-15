@@ -6,13 +6,17 @@ interface FileListProps {
   items: TransferItem[];
   address: string;
   onError: (error: string) => void;
+  onRefresh?: () => void;
 }
 
-export const FileList = ({ items, address, onError }: FileListProps) => {
+export const FileList = ({ items, address, onError, onRefresh }: FileListProps) => {
   const [expandedTextId, setExpandedTextId] = useState<string | null>(null);
   const [fullTextContent, setFullTextContent] = useState<{ [key: string]: string }>({});
   const [loadingTextId, setLoadingTextId] = useState<string | null>(null);
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
+  const [downloadingAll, setDownloadingAll] = useState(false);
+  const [downloadedItemId, setDownloadedItemId] = useState<string | null>(null);
 
   const handleDownload = async (item: TransferItem) => {
     if (item.type !== 'file') return;
@@ -20,6 +24,8 @@ export const FileList = ({ items, address, onError }: FileListProps) => {
     try {
       const blob = await syncService.file.download(address, item.id);
       await FileUtils.downloadBlob(blob, item.filename || 'download');
+      setDownloadedItemId(item.id);
+      setTimeout(() => setDownloadedItemId(null), 2000);
     } catch (err) {
       onError(err instanceof Error ? err.message : '下载失败');
     }
@@ -82,6 +88,57 @@ export const FileList = ({ items, address, onError }: FileListProps) => {
     }
   };
 
+  const handleDelete = async (item: TransferItem) => {
+    if (!confirm(`确定要删除这个${item.type === 'file' ? '文件' : '文本'}吗？`)) {
+      return;
+    }
+
+    setDeletingItemId(item.id);
+    try {
+      if (item.type === 'file') {
+        await syncService.file.deleteFile(address, item.id);
+      } else {
+        await syncService.text.deleteText(address, item.id);
+      }
+      onRefresh?.();
+    } catch (err) {
+      onError(err instanceof Error ? err.message : '删除失败');
+    } finally {
+      setDeletingItemId(null);
+    }
+  };
+
+  const handleDownloadAll = async () => {
+    const filesToDownload = files;
+    if (filesToDownload.length === 0) {
+      onError('没有可下载的文件');
+      return;
+    }
+
+    setDownloadingAll(true);
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const item of filesToDownload) {
+      try {
+        const blob = await syncService.file.download(address, item.id);
+        await FileUtils.downloadBlob(blob, item.filename || 'download');
+        successCount++;
+        // Add a small delay between downloads to avoid overwhelming the browser
+        await new Promise(resolve => setTimeout(resolve, 500));
+      } catch (err) {
+        failCount++;
+        console.error(`Failed to download ${item.filename}:`, err);
+      }
+    }
+
+    setDownloadingAll(false);
+
+    if (failCount > 0) {
+      onError(`批量下载完成：成功 ${successCount} 个，失败 ${failCount} 个`);
+    }
+  };
+
   const files = items.filter(item => item.type === 'file');
   const textItems = items.filter(item => item.type === 'text');
 
@@ -96,7 +153,17 @@ export const FileList = ({ items, address, onError }: FileListProps) => {
 
   return (
     <div className="rounded-lg bg-white p-4 shadow dark:bg-gray-800">
-      <h3 className="mb-3 text-lg font-semibold text-gray-900 dark:text-gray-100">传输列表 ({items.length})</h3>
+      <div className="mb-3 flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">传输列表 ({items.length})</h3>
+        {files.length > 0 && (
+          <button
+            onClick={handleDownloadAll}
+            disabled={downloadingAll}
+            className="rounded bg-purple-600 px-3 py-1 text-sm text-white transition-colors hover:bg-purple-700 disabled:bg-gray-400">
+            {downloadingAll ? '下载中...' : `批量下载 (${files.length})`}
+          </button>
+        )}
+      </div>
 
       <div className="space-y-2">
         {textItems.map(item => {
@@ -133,6 +200,12 @@ export const FileList = ({ items, address, onError }: FileListProps) => {
                     }`}>
                     {copiedItemId === item.id ? '已复制!' : '复制'}
                   </button>
+                  <button
+                    onClick={() => handleDelete(item)}
+                    disabled={deletingItemId === item.id}
+                    className="rounded bg-red-600 px-3 py-1 text-sm text-white transition-colors hover:bg-red-700 disabled:bg-gray-400">
+                    {deletingItemId === item.id ? '删除中...' : '删除'}
+                  </button>
                 </div>
               </div>
               <div
@@ -166,11 +239,21 @@ export const FileList = ({ items, address, onError }: FileListProps) => {
                   <span>{FileUtils.formatDate(item.createdAt)}</span>
                 </div>
               </div>
-              <button
-                onClick={() => handleDownload(item)}
-                className="rounded bg-green-600 px-3 py-1 text-sm text-white transition-colors hover:bg-green-700">
-                下载
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleDownload(item)}
+                  className={`rounded px-3 py-1 text-sm text-white transition-colors ${
+                    downloadedItemId === item.id ? 'bg-blue-500 hover:bg-blue-600' : 'bg-green-600 hover:bg-green-700'
+                  }`}>
+                  {downloadedItemId === item.id ? '已下载!' : '下载'}
+                </button>
+                <button
+                  onClick={() => handleDelete(item)}
+                  disabled={deletingItemId === item.id}
+                  className="rounded bg-red-600 px-3 py-1 text-sm text-white transition-colors hover:bg-red-700 disabled:bg-gray-400">
+                  {deletingItemId === item.id ? '删除中...' : '删除'}
+                </button>
+              </div>
             </div>
           </div>
         ))}

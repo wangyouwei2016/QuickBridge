@@ -36,7 +36,8 @@
       "Bash(gh release edit:*)",
       "Bash(convert:*)",
       "Bash(ls:*)",
-      "Bash(pnpm eslint:*)"
+      "Bash(pnpm eslint:*)",
+      "Bash(gh release:*)"
     ]
   }
 }

@@ -36,10 +36,16 @@ export class FileController {
 
     const metadata = await fileService.getFile(address, id);
 
-    // 正确处理中文文件名，使用 RFC 5987 编码
+    // 正确处理中文文件名，同时支持旧浏览器和新浏览器
+    // 使用 RFC 5987 编码 (filename*) 和传统编码 (filename) 的组合
     const encodedFileName = encodeURIComponent(metadata.originalName);
-    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodedFileName}`);
-    res.download(metadata.path, metadata.originalName);
+    const fallbackFileName = Buffer.from(metadata.originalName, 'utf-8').toString('latin1');
+
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${fallbackFileName}"; filename*=UTF-8''${encodedFileName}`,
+    );
+    res.sendFile(metadata.path);
   });
 
   listData = asyncHandler(async (req: Request, res: Response) => {

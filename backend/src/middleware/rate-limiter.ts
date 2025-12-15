@@ -1,5 +1,5 @@
-import rateLimit from 'express-rate-limit';
 import { env } from '../config/env';
+import { rateLimit } from 'express-rate-limit';
 
 export const globalLimiter = rateLimit({
   windowMs: env.RATE_LIMIT_WINDOW_MS,
@@ -23,8 +23,8 @@ export const addressCreationLimiter = rateLimit({
 
 export const fileUploadLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 5,
-  keyGenerator: (req) => req.params.address || req.ip || 'unknown',
+  max: 50,
+  keyGenerator: req => req.params.address || req.ip || 'unknown',
   message: {
     success: false,
     error: 'Too many file uploads for this address, please try again later',
@@ -34,7 +34,7 @@ export const fileUploadLimiter = rateLimit({
 export const fileDownloadLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 50,
-  keyGenerator: (req) => req.params.address || req.ip || 'unknown',
+  keyGenerator: req => req.params.address || req.ip || 'unknown',
   message: {
     success: false,
     error: 'Too many download requests, please try again later',

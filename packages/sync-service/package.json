@@ -1,6 +1,6 @@
 {
   "name": "@extension/sync-service",
-  "version": "1.4.0",
+  "version": "1.6.0",
   "description": "QuickBridge sync service for cross-device data transfer",
   "private": true,
   "type": "module",

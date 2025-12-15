@@ -62,7 +62,12 @@ const SidePanel = () => {
 
         {/* File List */}
         {syncService.currentAddress && (
-          <FileList items={polling.items} address={syncService.currentAddress} onError={handleError} />
+          <FileList
+            items={polling.items}
+            address={syncService.currentAddress}
+            onError={handleError}
+            onRefresh={polling.refresh}
+          />
         )}
 
         {/* Sync Status */}

@@ -15,4 +15,8 @@ export class TextApi {
   async getById(address: string, textId: string): Promise<ApiResponse<TextData>> {
     return this.client.get(`/data/${address}/text/${textId}`);
   }
+
+  async deleteText(address: string, textId: string): Promise<ApiResponse<void>> {
+    return this.client.delete(`/data/${address}/text/${textId}`);
+  }
 }

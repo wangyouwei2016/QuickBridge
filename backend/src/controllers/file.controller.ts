@@ -36,6 +36,9 @@ export class FileController {
 
     const metadata = await fileService.getFile(address, id);
 
+    // 正确处理中文文件名，使用 RFC 5987 编码
+    const encodedFileName = encodeURIComponent(metadata.originalName);
+    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodedFileName}`);
     res.download(metadata.path, metadata.originalName);
   });
 
@@ -77,6 +80,20 @@ export class FileController {
     res.json({
       success: true,
       data: { items },
+    });
+  });
+
+  deleteFile = asyncHandler(async (req: Request, res: Response) => {
+    const { address, id } = req.params;
+
+    // Update last accessed time
+    await storageService.getAddress(address);
+
+    await fileService.deleteFile(address, id);
+
+    res.json({
+      success: true,
+      message: 'File deleted successfully',
     });
   });
 

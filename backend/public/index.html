@@ -466,6 +466,27 @@
             transform: translateY(-1px);
         }
 
+        .delete-btn {
+            background: var(--btn-danger);
+            color: white;
+            border: none;
+            padding: 0.625rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            width: 100%;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);
+        }
+
+        .delete-btn:hover {
+            background: var(--btn-danger-hover);
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+            transform: translateY(-1px);
+        }
+
         .status {
             padding: 0.75rem;
             border-radius: 8px;
@@ -566,6 +587,14 @@
 
         .text-item-btn.secondary {
             background: #999;
+        }
+
+        .text-item-btn.danger {
+            background: var(--btn-danger);
+        }
+
+        .text-item-btn.danger:hover {
+            background: var(--btn-danger-hover);
         }
 
         .text-item-content {
@@ -788,7 +817,17 @@
 
         <!-- 文件列表 -->
         <div class="section">
-            <div class="section-title">文件列表</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <div class="section-title" style="margin-bottom: 0;">文件列表</div>
+                <button id="downloadAllBtn" class="download-btn" onclick="downloadAllFiles()" style="display: none; padding: 0.5rem 1rem; font-size: 0.875rem;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    批量下载
+                </button>
+            </div>
             <div class="file-list" id="fileList">
                 <div class="empty-state">暂无文件</div>
             </div>
@@ -1226,6 +1265,9 @@
                                 <button class="text-item-btn" onclick="copyText('${text.id}', \`${text.preview?.replace(/`/g, '\\`') || ''}\`)">
                                     复制
                                 </button>
+                                <button class="text-item-btn danger" onclick="deleteText('${text.id}')">
+                                    删除
+                                </button>
                             </div>
                         </div>
                         <div class="text-item-content ${isExpanded ? 'expanded' : ''}">${displayText || ''}</div>
@@ -1458,6 +1500,91 @@
             }
         }
 
+        // 批量下载所有文件
+        async function downloadAllFiles() {
+            const fileItems = (window.currentFileItems || []);
+            if (fileItems.length === 0) {
+                showStatus('没有可下载的文件', 'error');
+                return;
+            }
+
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = '下载中...';
+
+            let successCount = 0;
+            let failCount = 0;
+
+            for (const file of fileItems) {
+                try {
+                    await downloadFile(file.id, file.filename);
+                    successCount++;
+                    // 添加延迟避免浏览器阻止多个下载
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                } catch (error) {
+                    failCount++;
+                    console.error(`Failed to download ${file.filename}:`, error);
+                }
+            }
+
+            btn.disabled = false;
+            btn.textContent = `批量下载 (${fileItems.length})`;
+
+            if (failCount > 0) {
+                showStatus(`批量下载完成：成功 ${successCount} 个，失败 ${failCount} 个`, 'info');
+            } else {
+                showStatus(`批量下载完成：成功下载 ${successCount} 个文件`, 'success');
+            }
+        }
+
+        // 删除文件
+        async function deleteFile(fileId, fileName) {
+            if (!confirm(`确定要删除文件 "${fileName}" 吗？`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/data/${currentAddress}/file/${fileId}`, {
+                    method: 'DELETE',
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showStatus('文件删除成功！', 'success');
+                    fetchData(); // 刷新数据
+                } else {
+                    showStatus('删除失败: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showStatus('删除失败: ' + error.message, 'error');
+            }
+        }
+
+        // 删除文本
+        async function deleteText(textId) {
+            if (!confirm('确定要删除这条文本吗？')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/data/${currentAddress}/text/${textId}`, {
+                    method: 'DELETE',
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showStatus('文本删除成功！', 'success');
+                    fetchData(); // 刷新数据
+                } else {
+                    showStatus('删除失败: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showStatus('删除失败: ' + error.message, 'error');
+            }
+        }
+
         // 获取数据
         async function fetchData() {
             try {
@@ -1475,6 +1602,16 @@
                     window.currentTextItems = textItems;
                     renderTextList();
 
+                    // 保存文件列表到全局变量
+                    window.currentFileItems = fileItems;
+
+                    // 显示或隐藏批量下载按钮
+                    const downloadAllBtn = document.getElementById('downloadAllBtn');
+                    if (downloadAllBtn) {
+                        downloadAllBtn.style.display = fileItems.length > 0 ? 'inline-flex' : 'none';
+                        downloadAllBtn.textContent = `批量下载 (${fileItems.length})`;
+                    }
+
                     // 更新文件列表
                     const fileListDiv = document.getElementById('fileList');
                     if (fileItems.length > 0) {
@@ -1484,14 +1621,23 @@
                                     <div class="file-name">${file.filename}</div>
                                     <div class="file-size">${formatFileSize(file.size)}</div>
                                 </div>
-                                <button class="download-btn" onclick="downloadFile('${file.id}', '${file.filename}')">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
-                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                        <polyline points="7 10 12 15 17 10"></polyline>
-                                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                                    </svg>
-                                    下载文件
-                                </button>
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="download-btn" onclick="downloadFile('${file.id}', '${file.filename}')">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                            <polyline points="7 10 12 15 17 10"></polyline>
+                                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                                        </svg>
+                                        下载
+                                    </button>
+                                    <button class="delete-btn" onclick="deleteFile('${file.id}', '${file.filename}')">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                        </svg>
+                                        删除
+                                    </button>
+                                </div>
                             </div>
                         `).join('');
                     } else {

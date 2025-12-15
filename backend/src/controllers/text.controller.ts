@@ -55,6 +55,20 @@ export class TextController {
       data: textData,
     });
   });
+
+  deleteText = asyncHandler(async (req: Request, res: Response) => {
+    const { address, id } = req.params;
+
+    // Update last accessed time
+    await storageService.getAddress(address);
+
+    await storageService.deleteText(address, id);
+
+    res.json({
+      success: true,
+      message: 'Text deleted successfully',
+    });
+  });
 }
 
 export const textController = new TextController();

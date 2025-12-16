@@ -1,5 +1,6 @@
+import { syncService, SyncStorage } from '@extension/sync-service';
 import { useState, useEffect, useCallback } from 'react';
-import { syncService, SyncStorage, TransferItem } from '@extension/sync-service';
+import type { TransferItem } from '@extension/sync-service';
 
 export interface SyncServiceState {
   currentAddress: string | null;
@@ -21,10 +22,13 @@ export const useSyncService = () => {
   // Load initial state
   useEffect(() => {
     const loadState = async () => {
+      // 每次打开插件都清除当前地址，回到初始界面
+      await SyncStorage.setCurrentAddress(null);
+
       const syncState = await SyncStorage.get();
       setState(prev => ({
         ...prev,
-        currentAddress: syncState.currentAddress,
+        currentAddress: null, // 强制设置为 null
         recentAddresses: syncState.recentAddresses,
         transferHistory: syncState.transferHistory,
       }));

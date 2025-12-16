@@ -37,7 +37,8 @@
       "Bash(convert:*)",
       "Bash(ls:*)",
       "Bash(pnpm eslint:*)",
-      "Bash(gh release:*)"
+      "Bash(gh release:*)",
+      "Bash(cp:*)"
     ]
   }
 }

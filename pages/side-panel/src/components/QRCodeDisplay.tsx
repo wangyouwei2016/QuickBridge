@@ -9,7 +9,6 @@ interface QRCodeDisplayProps {
 
 export const QRCodeDisplay = ({ address, baseUrl = 'https://sync.ulises.cn', onLeave }: QRCodeDisplayProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [qrDataUrl, setQrDataUrl] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -17,8 +16,6 @@ export const QRCodeDisplay = ({ address, baseUrl = 'https://sync.ulises.cn', onL
       try {
         setError(null);
         const qrSize = 96; // 96px for compact display
-        const dataUrl = await QRCodeGenerator.generate(address, baseUrl, qrSize);
-        setQrDataUrl(dataUrl);
 
         if (canvasRef.current) {
           await QRCodeGenerator.generateCanvas(address, canvasRef.current, baseUrl, qrSize);
@@ -34,13 +31,9 @@ export const QRCodeDisplay = ({ address, baseUrl = 'https://sync.ulises.cn', onL
     }
   }, [address, baseUrl]);
 
-  const handleDownload = () => {
-    if (!qrDataUrl) return;
-
-    const link = document.createElement('a');
-    link.href = qrDataUrl;
-    link.download = `quickbridge-${address}.png`;
-    link.click();
+  const handleOpenWeb = () => {
+    const url = `${baseUrl}?address=${address}`;
+    window.open(url, '_blank');
   };
 
   if (error) {
@@ -49,31 +42,28 @@ export const QRCodeDisplay = ({ address, baseUrl = 'https://sync.ulises.cn', onL
 
   return (
     <div className="rounded-lg bg-white p-3 shadow dark:bg-gray-800">
-      <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">当前地址</h3>
-        {onLeave && (
-          <button
-            onClick={onLeave}
-            className="rounded px-3 py-1 text-xs text-red-600 transition-colors hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20">
-            离开
-          </button>
-        )}
-      </div>
-      <div className="mb-3 rounded bg-gray-100 p-2 text-center font-mono text-base font-semibold text-gray-900 dark:bg-gray-700 dark:text-gray-100">
-        {address}
-      </div>
       <div className="flex items-center gap-3">
         <canvas ref={canvasRef} className="h-24 w-24 flex-shrink-0" />
-        <div className="min-w-0 flex-1">
-          <h4 className="mb-1 text-xs font-medium text-gray-700 dark:text-gray-300">扫码访问</h4>
-          <p className="mb-2 break-all text-xs text-gray-500 dark:text-gray-500">
-            {baseUrl}?address={address}
-          </p>
+        <div className="min-w-0 flex-1 space-y-2">
+          <h4 className="text-xs font-medium text-gray-700 dark:text-gray-300">扫码访问</h4>
           <button
-            onClick={handleDownload}
-            className="rounded bg-gray-200 px-3 py-1 text-xs text-gray-900 transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600">
-            下载二维码
+            onClick={handleOpenWeb}
+            className="block text-xs text-blue-600 transition-colors hover:text-blue-700 hover:underline dark:text-blue-400 dark:hover:text-blue-300">
+            网页访问
           </button>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">当前地址</span>
+            <span className="rounded bg-gray-100 px-2 py-1 font-mono text-xs font-semibold text-gray-900 dark:bg-gray-700 dark:text-gray-100">
+              {address}
+            </span>
+            {onLeave && (
+              <button
+                onClick={onLeave}
+                className="rounded px-2 py-1 text-xs text-red-600 transition-colors hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20">
+                离开
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

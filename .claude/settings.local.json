@@ -38,7 +38,8 @@
       "Bash(ls:*)",
       "Bash(pnpm eslint:*)",
       "Bash(gh release:*)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(gh auth:*)"
     ]
   }
 }

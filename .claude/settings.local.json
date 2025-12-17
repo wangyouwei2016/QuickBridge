@@ -39,7 +39,9 @@
       "Bash(pnpm eslint:*)",
       "Bash(gh release:*)",
       "Bash(cp:*)",
-      "Bash(gh auth:*)"
+      "Bash(gh auth:*)",
+      "Bash(release/quickbridge-extension-v1.8.0.zip)",
+      "Bash(find:*)"
     ]
   }
 }

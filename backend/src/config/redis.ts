@@ -16,6 +16,7 @@ export const getRedisClient = async (): Promise<RedisClient> => {
       port: env.REDIS_PORT,
     },
     password: env.REDIS_PASSWORD || undefined,
+    role: 'master',
   });
 
   redisClient.on('error', (err) => {
@@ -24,6 +25,18 @@ export const getRedisClient = async (): Promise<RedisClient> => {
 
   redisClient.on('connect', () => {
     console.log('Redis Client Connected');
+  });
+
+  redisClient.on('ready', () => {
+    console.log('Redis Client Ready');
+  });
+
+  redisClient.on('reconnecting', () => {
+    console.log('Redis Client Reconnecting...');
+  });
+
+  redisClient.on('close', () => {
+    console.log('Redis Client Closed');
   });
 
   await redisClient.connect();

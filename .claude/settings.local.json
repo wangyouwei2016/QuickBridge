@@ -41,7 +41,8 @@
       "Bash(cp:*)",
       "Bash(gh auth:*)",
       "Bash(release/quickbridge-extension-v1.8.0.zip)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(git rebase:*)"
     ]
   }
 }

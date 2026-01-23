@@ -1,6 +1,6 @@
 {
   "name": "quickbridge-backend",
-  "version": "1.8.0",
+  "version": "1.9.1",
   "description": "QuickBridge backend API for cross-device data transfer",
   "main": "dist/index.js",
   "scripts": {

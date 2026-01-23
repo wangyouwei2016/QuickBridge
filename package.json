@@ -1,6 +1,6 @@
 {
   "name": "quickbridge-extension",
-  "version": "1.8.0",
+  "version": "1.9.1",
   "description": "QuickBridge - Cross-device data transfer Chrome extension",
   "license": "MIT",
   "private": true,

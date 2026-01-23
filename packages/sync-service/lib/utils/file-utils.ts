@@ -9,7 +9,7 @@ export class FileUtils {
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
   }
 
-  static validateFileSize(file: File, maxSize: number = 20 * 1024 * 1024): boolean {
+  static validateFileSize(file: File, maxSize: number = 200 * 1024 * 1024): boolean {
     return file.size <= maxSize;
   }
 

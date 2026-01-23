@@ -7,7 +7,7 @@ interface FileUploadProps {
   onError: (error: string) => void;
 }
 
-const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+const MAX_FILE_SIZE = 200 * 1024 * 1024; // 200MB
 
 export const FileUpload = ({ address, onUploadComplete, onError }: FileUploadProps) => {
   const [isDragging, setIsDragging] = useState(false);

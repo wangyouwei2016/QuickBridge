@@ -7,7 +7,7 @@ export const CONSTANTS = {
   },
   DATA: {
     MAX_TEXT_SIZE: 1024 * 1024, // 1MB
-    MAX_FILE_SIZE: 20 * 1024 * 1024, // 20MB
+    MAX_FILE_SIZE: 200 * 1024 * 1024, // 200MB
     TEXT_PREVIEW_LENGTH: 100,
   },
   TTL: {

@@ -13,7 +13,7 @@ export const env = {
   REDIS_PASSWORD: process.env.REDIS_PASSWORD || '',
 
   UPLOAD_DIR: path.resolve(process.env.UPLOAD_DIR || './uploads'),
-  MAX_FILE_SIZE: parseInt(process.env.MAX_FILE_SIZE || '209715200', 10),
+  MAX_FILE_SIZE: 200 * 1024 * 1024, // 200MB
 
   RATE_LIMIT_WINDOW_MS: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10),
   RATE_LIMIT_MAX_REQUESTS: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100', 10),

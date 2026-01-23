@@ -837,7 +837,7 @@
                 <button onclick="triggerFileSelect()" type="button">选择文件</button>
                 <input type="file" id="fileInput" multiple accept="*/*" style="position: absolute; left: -9999px;" />
             </div>
-            <p style="color: #999; font-size: 14px; margin-top: 10px;">最大文件大小: 20MB，支持多文件上传（请使用其他浏览器打开，微信浏览器不支持）</p>
+            <p style="color: #999; font-size: 14px; margin-top: 10px;">最大文件大小: 200MB，支持多文件上传（请使用其他浏览器打开，微信浏览器不支持）</p>
 
             <!-- 已选择的文件列表 -->
             <div id="selectedFiles" class="hidden" style="margin-top: 10px;">
@@ -1417,9 +1417,9 @@
                     }
 
                     // 检查文件大小
-                    const oversizedFiles = files.filter(file => file.size > 20 * 1024 * 1024);
+                    const oversizedFiles = files.filter(file => file.size > 200 * 1024 * 1024);
                     if (oversizedFiles.length > 0) {
-                        showStatus(`以下文件超过 20MB 限制: ${oversizedFiles.map(f => f.name).join(', ')}`, 'error');
+                        showStatus(`以下文件超过 200MB 限制: ${oversizedFiles.map(f => f.name).join(', ')}`, 'error');
                         fileInput.value = '';
                         hide('selectedFiles');
                         return;
